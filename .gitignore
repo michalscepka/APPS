@@ -1,4 +1,6 @@
 *.pdf
+sklad/
+workspace.mcu/
 
 # Prerequisites
 *.d
