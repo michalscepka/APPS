@@ -266,13 +266,6 @@ public:
         }
     }
 
-    /*void move(int step)
-    {
-        hide();
-        pos.x += step;
-        draw();
-    }*/
-
     void move()
     {
         hide();
@@ -280,28 +273,6 @@ public:
         draw();
     }
 };
-
-void printText(string text, Point2D point, RGB color)
-{
-    int offset = 0;
-    for (int i = 0; i < text.size(); i++)
-    {
-        Character char1({point.x + offset, point.y}, text[i], color, {0, 0, 0});
-        char1.draw();
-        offset += 8;
-    }
-}
-
-void printTextVert(std::string text, Point2D point, RGB color)
-{
-    int offset = 0;
-    for (int i = 0; i < text.size(); i++)
-    {
-        Character char1({point.x, point.y + offset}, text[i], color, {0, 0, 0});
-        char1.draw();
-        offset += 8;
-    }
-}
 
 void Move(Text text)
 {
@@ -322,6 +293,14 @@ RGB cyan = {0, 255, 255};
 RGB green = {0, 255, 0};
 RGB blue = {0, 0, 255};
 RGB red = {255, 0, 0};
+
+Circle circle1(point5, 52, cyan, black);
+int seconds_counter = 0;
+float timee = 0.0f;
+float scale = 50;
+float time_m = 0;
+Line rucicka_s({ point5.x, point5.y }, { (point5.x + (int)(sin(timee) * scale)), (point5.y - (int)(cos(timee) * scale)) }, red, black);
+Line rucicka_m({ point5.x, point5.y }, { (point5.x + (int)(sin(timee) * scale)), (point5.y - (int)(cos(timee) * scale)) }, white, black);
 
 Character watch[6] =
 { 
@@ -362,7 +341,7 @@ bool add_time(int left, int right, char left_ch, char right_ch)
     return false;
 }
 
-void clocks()
+void digital_clocks()
 {
     for(int i = 0; i < 6; i++)
     {
@@ -395,19 +374,42 @@ void clocks()
     }
 }
 
+void analog_clocks()
+{
+    rucicka_s.hide();
+    rucicka_m.hide();
+    
+    rucicka_s.pos2 = { (point5.x + (int)(sin(timee) * scale)), (point5.y - (int)(cos(timee) * scale)) };
+    rucicka_s.draw();
+    rucicka_m.pos2 = { (point5.x + (int)(sin(time_m) * scale)), (point5.y - (int)(cos(time_m) * scale)) };
+    rucicka_m.draw();
+
+    seconds_counter++;
+    if(seconds_counter % 60 != 0)
+    {
+        timee += 0.105f;
+    }
+    else
+    {
+        timee = 0;
+        seconds_counter = 0;
+        time_m += 0.105f;
+    }
+}
+
 int main()
 {
     lcd_init();                     // LCD initialization
 
     lcd_clear();                    // LCD clear screen
 
-    int l_color_red = 0xF800;
+    /*int l_color_red = 0xF800;
     int l_color_green = 0x07E0;
     int l_color_blue = 0x001F;
     int l_color_white = 0xFFFF;
 
     // simple animation display four color square using LCD_put_pixel function
-    /*int l_limit = 200;
+    int l_limit = 200;
     for ( int ofs = 0; ofs < 20; ofs++ ) // square offset in x and y axis
         for ( int i = 0; i < l_limit; i++ )
         {
@@ -417,32 +419,15 @@ int main()
             lcd_put_pixel(ofs + l_limit, ofs + i, l_color_white);
         }*/
 
-    int barva = 0xFFFF;
-
-
-    //Line line1({100, 100}, {150, 50}, cyan, black);
-    //line1.draw();
-
-    //lcd_put_pixel(point1.x, point1.y, barva);
-    //lcd_put_pixel(200, 50, barva);
-
-    //cv::imshow( LCD_NAME, g_canvas );
-    //cv::waitKey( 0 );
-
-    //line1.hide();
-
-    Character char1(point3, '0', white, black);
+    Character char1(point3, 'A', white, black);
     char1.draw();
 
-    //printText("Kokos", point1, bordo);
-    //printTextVert("Kokoska", point3, cyan);
-
-    Text kokos(point1, "Kokos", cyan, black, false);
-    kokos.draw();
+    Text text1(point1, "Kokos", cyan, black, true);
+    text1.draw();
 
     /*for(int i = 0; i < 10; i++)
     {
-        kokos.move();
+        text1.move();
         cv::imshow( LCD_NAME, g_canvas );
         cv::waitKey( 0 );
     }*/
@@ -452,51 +437,17 @@ int main()
         dots[i].draw();
     }
     
-    int seconds_counter = 0;
-
-    Circle circle1(point5, 52, cyan, black);
     circle1.draw();
-
-    float time = 0;
-    float scale = 50;
-    float time_m = 0;
-
-    Line rucicka_s({point5.x, point5.y}, { (point5.x + (int)(sin(time) * scale)), (point5.y - (int)(cos(time) * scale)) }, red, black);
     rucicka_s.draw();
-
-    Line rucicka_m({point5.x, point5.y}, { (point5.x + (int)(sin(time) * scale)), (point5.y - (int)(cos(time) * scale)) }, white, black);
     rucicka_m.draw();
 
     while(true)
     {
-        rucicka_s.pos2 = { (point5.x + (int)(sin(time) * scale)), (point5.y - (int)(cos(time) * scale)) };
-        rucicka_s.draw();
-        rucicka_m.pos2 = { (point5.x + (int)(sin(time_m) * scale)), (point5.y - (int)(cos(time_m) * scale)) };
-        rucicka_m.draw();
-
-        seconds_counter++;
-        if(seconds_counter % 60 != 0)
-        {
-            time += 0.105f;
-        }
-        else
-        {
-            time = 0;
-            seconds_counter = 0;
-            time_m += 0.105f;
-        }
-        
-        /*char1.hide();
-        char1.character = (char)(seconds_counter + '0' - 1);
-        char1.draw();*/
-
-        clocks();
+        digital_clocks();
+        analog_clocks();
 
         cv::imshow( LCD_NAME, g_canvas );
         cv::waitKey( 0 );
-
-        rucicka_s.hide();
-        rucicka_m.hide();
     }
 
     cv::imshow( LCD_NAME, g_canvas );   // refresh content of "LCD"
