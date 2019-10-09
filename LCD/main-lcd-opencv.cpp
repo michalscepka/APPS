@@ -15,18 +15,20 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <opencv2/opencv.hpp>
-#include "font8x8.cpp"
+//#include "font8x8.cpp"
+//#include "font16x26_lsb.h"
+#include "font16x26_msb.h"
 
 #define LCD_WIDTH       320
 #define LCD_HEIGHT      240
 #define LCD_NAME        "Virtual LCD"
 
-#define WIDTH 8
-#define HEIGHT 8
+#define WIDTH 26
+#define HEIGHT 26
 
 using namespace std;
 
-int offset = 8;
+int offset = 16;
 int dist = 10;
 
 // LCD Simulator
@@ -185,10 +187,12 @@ public:
     { 
         for(int y = 0; y < HEIGHT; y++)
         {
-            int radek_fontu = font8x8[character][y];
+            //int radek_fontu = font8x8[character][y];
+            int radek_fontu = font[character][y];
             for(int x = 0; x < WIDTH; x++)
             {
-                if(radek_fontu & (1 << x)) drawPixel(pos.x + x, pos.y + y); //muzeme preklopit (1 >> x) MSB/LSB
+                //if(radek_fontu & (1 << x)) drawPixel(pos.x + x, pos.y + y);    //LSB
+                if(radek_fontu & (1 << x)) drawPixel(pos.x - x + offset, pos.y + y);    //MSB
             }
         }    
     }
@@ -242,27 +246,28 @@ public:
 
     void draw()
     { 
-        int offset = 0;
+        int offs = 0;
         for (int i = 0; i < str.size(); i++)
         {
             for(int y = 0; y < HEIGHT; y++)
             {
-                int radek_fontu = font8x8[str[i]][y];
+                //int radek_fontu = font8x8[str[i]][y];
+                int radek_fontu = font[str[i]][y];
                 for(int x = 0; x < WIDTH; x++)
                 {
                     if(horizontal)
                     {
-                        if(radek_fontu & (1 << x))
-                            drawPixel(pos.x + x + offset, pos.y + y);
+                        //if(radek_fontu & (1 << x)) drawPixel(pos.x + x + offs, pos.y + y);           //LSB
+                        if(radek_fontu & (1 << x)) drawPixel(pos.x - x + offset + offs, pos.y + y);    //MSB
                     }
                     else
                     {
-                        if(radek_fontu & (1 << x))
-                            drawPixel(pos.x + x, pos.y + y + offset);
+                        //if(radek_fontu & (1 << x)) drawPixel(pos.x + x, pos.y + y + offs);           //LSB
+                        if(radek_fontu & (1 << x)) drawPixel(pos.x - x + offset, pos.y + y + offs);    //MSB
                     }
                 }
             }
-            offset += 8;
+            offs += offset;
         }
     }
 
@@ -274,16 +279,9 @@ public:
     }
 };
 
-void Move(Text text)
-{
-    text.hide();
-    text.pos.x += 100;
-    text.draw();
-}
-
 Point2D point1 = {10, 10};
 Point2D point2 = {120, 120};
-Point2D point3 = {100, 100};
+Point2D point3 = {0, 0};
 Point2D point4 = {150, 50};
 Point2D point5 = {150, 150};
 RGB black = {0, 0, 0};
@@ -419,11 +417,13 @@ int main()
             lcd_put_pixel(ofs + l_limit, ofs + i, l_color_white);
         }*/
 
-    Character char1(point3, 'A', white, black);
+    Character char1(point3, 'h', white, black);
     char1.draw();
 
     Text text1(point1, "Kokos", cyan, black, true);
     text1.draw();
+    Text text2({30, 50}, "Kokoska", bordo, black, false);
+    text2.draw();
 
     /*for(int i = 0; i < 10; i++)
     {

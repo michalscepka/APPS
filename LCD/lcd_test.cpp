@@ -161,9 +161,11 @@ public:
         for(int y = 0; y < HEIGHT; y++)
         {
             int radek_fontu = font8x8[character][y];
+			//int radek_fontu = font[character][y];
             for(int x = 0; x < WIDTH; x++)
             {
-                if(radek_fontu & (1 << x)) drawPixel(pos.x + x, pos.y + y); //muzeme preklopit (1 >> x) MSB/LSB
+                if(radek_fontu & (1 << x)) drawPixel(pos.x + x, pos.y + y);		//LSB
+				//if(radek_fontu & (1 << x)) drawPixel(pos.x - x + offset, pos.y + y);    //MSB
             }
         }
     }
@@ -223,17 +225,18 @@ public:
             for(int y = 0; y < HEIGHT; y++)
             {
                 int radek_fontu = font8x8[str[i]][y];
+				//int radek_fontu = font[str[i]][y];
                 for(int x = 0; x < WIDTH; x++)
                 {
                     if(horizontal)
                     {
-                        if(radek_fontu & (1 << x))
-                            drawPixel(pos.x + x + offs, pos.y + y);
+						if(radek_fontu & (1 << x)) drawPixel(pos.x + x + offs, pos.y + y);           //LSB
+                        //if(radek_fontu & (1 << x)) drawPixel(pos.x - x + offset + offs, pos.y + y);    //MSB
                     }
                     else
                     {
-                        if(radek_fontu & (1 << x))
-                            drawPixel(pos.x + x, pos.y + y + offs);
+                        if(radek_fontu & (1 << x)) drawPixel(pos.x + x, pos.y + y + offs);			//LSB
+						//if(radek_fontu & (1 << x)) drawPixel(pos.x - x + offset, pos.y + y + offs);    //MSB
                     }
                 }
             }
@@ -248,35 +251,6 @@ public:
         draw();
     }
 };
-
-Point2D point1 = {10, 10};
-Point2D point2 = {120, 120};
-Point2D point3 = {100, 100};
-Point2D point4 = {100, 50};
-RGB black = {0, 0, 0};
-RGB white = {255, 255, 255};
-RGB bordo = {128, 0, 32};
-RGB cyan = {0, 255, 255};
-
-Text text1(point1, "Kokos", cyan, black, true);
-
-Character dots[2] =
-{
-	Character({point4.x + offset * 2, point4.y}, ':', white, black),
-	Character({point4.x + offset * 5, point4.y}, ':', white, black)
-};
-
-Character watch[6] =
-{
-	Character({point4.x, point4.y}, '0', white, black),
-	Character({point4.x + offset, point4.y}, '0', white, black),
-	Character({point4.x + offset * 3, point4.y}, '0', white, black),
-	Character({point4.x + offset * 4, point4.y}, '0', white, black),
-	Character({point4.x + offset * 6, point4.y}, '0', white, black),
-	Character({point4.x + offset * 7, point4.y}, '0' - 1, white, black)
-};
-
-
 
 struct PWM
 {
@@ -308,6 +282,69 @@ struct PWM
 	}
 };
 
+//--- ZMACKNUTI BUTTONU ---
+DigitalOut led1(PTA1);
+InterruptIn button1(PTC9);
+volatile bool button1_pressed = false; // Used in the main loop
+volatile bool button1_enabled = true; // Used for debouncing
+Timeout button1_timeout; // Used for debouncing
+
+// Enables button when bouncing is over
+void button1_enabled_cb(void)
+{
+    button1_enabled = true;
+}
+
+// ISR handling button pressed event
+void button1_onpressed_cb(void)
+{
+    if (button1_enabled) { // Disabled while the button is bouncing
+        button1_enabled = false;
+        button1_pressed = true; // To be read by the main loop
+        button1_timeout.attach(callback(button1_enabled_cb), 0.2); // Debounce time 300 ms
+    }
+}
+//--- ZMACKNUTI BUTTONU ---
+
+Point2D point1 = {10, 10};
+Point2D point2 = {120, 120};
+Point2D point3 = {0, 0};
+Point2D point4 = {150, 50};
+Point2D point5 = {150, 150};
+RGB black = {0, 0, 0};
+RGB white = {255, 255, 255};
+RGB bordo = {128, 0, 32};
+RGB cyan = {0, 255, 255};
+RGB green = {0, 255, 0};
+RGB blue = {0, 0, 255};
+RGB red = {255, 0, 0};
+
+Text text1(point1, "Kokos", cyan, black, true);
+
+Circle circle1(point5, 52, cyan, black);
+int seconds_counter = 0;
+float timee = 0.0f;
+float scale = 50;
+float time_m = 0;
+Line rucicka_s({ point5.x, point5.y }, { (point5.x + (int)(sin(timee) * scale)), (point5.y - (int)(cos(timee) * scale)) }, red, black);
+Line rucicka_m({ point5.x, point5.y }, { (point5.x + (int)(sin(timee) * scale)), (point5.y - (int)(cos(timee) * scale)) }, white, black);
+
+Character watch[6] =
+{
+	Character({point4.x, point4.y}, '0', white, black),
+	Character({point4.x + offset, point4.y}, '0', white, black),
+	Character({point4.x + offset * 3, point4.y}, '0', white, black),
+	Character({point4.x + offset * 4, point4.y}, '0', white, black),
+	Character({point4.x + offset * 6, point4.y}, '0', white, black),
+	Character({point4.x + offset * 7, point4.y}, '0' - 1, white, black)
+};
+
+Character dots[2] =
+{
+	Character({point4.x + offset * 2, point4.y}, ':', white, black),
+	Character({point4.x + offset * 5, point4.y}, ':', white, black)
+};
+
 void dotsBlick()
 {
 	if(!sviti)
@@ -328,7 +365,87 @@ void dotsBlick()
 	}
 }
 
-void clocks()
+bool add_time(int left, int right, char left_ch, char right_ch)
+{
+    if(watch[right].character >= right_ch)
+    {
+        watch[right].character = '0';
+
+        if(watch[left].character >= left_ch)
+        {
+            watch[left].character = '0';
+            return true;
+        }
+        else
+        {
+            watch[left].character++;
+        }
+    }
+    else
+    {
+        watch[right].character++;
+    }
+    return false;
+}
+
+void digital_clocks()
+{
+    for(int i = 0; i < 6; i++)
+    {
+        watch[i].hide();
+    }
+
+    if(add_time(4, 5, '5', '9'))
+    {
+        if(add_time(2, 3, '5', '9'))
+        {
+            add_time(0, 1, '2', '9');
+        }
+    }
+    
+    if (watch[0].character >= '2' && watch[1].character >= '4')
+    {
+        for(int i = 0; i < 6; i++)
+        {
+            watch[i].hide();
+        }
+        for(int i = 0; i < 6; i++)
+        {
+            watch[i].character = '0';
+        }
+    }
+    
+    for(int i = 0; i < 6; i++)
+    {
+        watch[i].draw();
+    }
+}
+
+void analog_clocks()
+{
+    rucicka_s.hide();
+    rucicka_m.hide();
+    
+    rucicka_s.pos2 = { (point5.x + (int)(sin(timee) * scale)), (point5.y - (int)(cos(timee) * scale)) };
+    rucicka_s.draw();
+    rucicka_m.pos2 = { (point5.x + (int)(sin(time_m) * scale)), (point5.y - (int)(cos(time_m) * scale)) };
+    rucicka_m.draw();
+
+    seconds_counter++;
+    if(seconds_counter % 60 != 0)
+    {
+        timee += 0.105f;
+    }
+    else
+    {
+        timee = 0;
+        seconds_counter = 0;
+        time_m += 0.105f;
+    }
+}
+
+
+/*void clocks()
 {
 	for(int i = 0; i < 6; i++)
 	{
@@ -393,7 +510,7 @@ void clocks()
 	{
 		watch[i].draw();
 	}
-}
+}*/
 
 void move()
 {
@@ -401,30 +518,6 @@ void move()
 	text1.pos.x += dist;
 	text1.draw();
 }
-
-//ODTUD
-DigitalOut led1(PTA1);
-InterruptIn button1(PTC9);
-volatile bool button1_pressed = false; // Used in the main loop
-volatile bool button1_enabled = true; // Used for debouncing
-Timeout button1_timeout; // Used for debouncing
-
-// Enables button when bouncing is over
-void button1_enabled_cb(void)
-{
-    button1_enabled = true;
-}
-
-// ISR handling button pressed event
-void button1_onpressed_cb(void)
-{
-    if (button1_enabled) { // Disabled while the button is bouncing
-        button1_enabled = false;
-        button1_pressed = true; // To be read by the main loop
-        button1_timeout.attach(callback(button1_enabled_cb), 0.2); // Debounce time 300 ms
-    }
-}
-//POTUD
 
 int main()
 {
@@ -453,34 +546,43 @@ int main()
 
 	Ticker t1, t2, t3;
 
-	//PWM backl = { bl, 1 };
-
-	Line line1(point1, point2, bordo, black);
-	line1.draw();
-	//line1.hide();
-
-	if(watch[0].character < '2')
-	{
-		watch[0].hide();
-		watch[0].character++;
-		watch[0].draw();
-	}
-	Circle circle1({150, 150}, 50, bordo, black);
-	circle1.draw();
-
-	Character char1(point2, 'A', white, black);
-	char1.draw();
-
-	t1.attach(&dotsBlick, 0.5);
-	t2.attach(&clocks, 1);
-	t3.attach(&move, 0.025);
-
-	//ODTUD
+	//--- ZMACKNUTI BUTTONU ---
 	button1.mode(PullUp); // Activate pull-up
 	button1.fall(callback(button1_onpressed_cb)); // Attach ISR to handle button press event
 
 	int idx = 0; // Just for printf below
-	//POTUD
+	//--- ZMACKNUTI BUTTONU ---
+
+	//PWM backl = { bl, 1 };
+
+	Character char1(point3, 'h', white, black);
+    char1.draw();
+
+	Line line1(point1, point2, red, black);
+	line1.draw();
+	//line1.hide();
+
+	/*if(watch[0].character < '2')
+	{
+		watch[0].hide();
+		watch[0].character++;
+		watch[0].draw();
+	}*/
+
+	/*Circle circle1({150, 150}, 50, red, black);
+	circle1.draw();
+
+	Character char1(point2, 'A', white, black);
+	char1.draw();*/
+
+	circle1.draw();
+    rucicka_s.draw();
+    rucicka_m.draw();
+
+	t1.attach(&dotsBlick, 0.5);
+	//t2.attach(&clocks, 1);
+	t2.attach(&digital_clocks, 1);
+	t3.attach(&move, 0.025);
 
 	while(1)
 	{
@@ -490,8 +592,9 @@ int main()
 			wait_ms(1);
 		}*/
 
-		//ODTUD
-		if (button1_pressed) { // Set when button is pressed
+		//--- ZMACKNUTI BUTTONU ---
+		if (button1_pressed)	// Set when button is pressed
+		{
 			button1_pressed = false;
 			pc.printf("Button pressed %d\r\n", idx++);
 			//led1 = !led1;
@@ -501,9 +604,8 @@ int main()
 			char1.draw();
 
 			//backl.brightness -= 0.1f;
-
 		}
-		//POTUD
+		//--- ZMACKNUTI BUTTONU ---
 	}
 
 	return 0;
