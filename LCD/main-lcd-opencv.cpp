@@ -448,7 +448,6 @@ void move()
         ocas_add = false;
     }
     
-
     for(int i = 0; i < snake.size(); i++)
     {
         snake[i].draw();
@@ -457,8 +456,8 @@ void move()
 
 void eat()
 {
-    if(head.center.x >= apple.center.x - snake_radius && head.center.x <= apple.center.x + snake_radius
-       && head.center.y >= apple.center.y - snake_radius && head.center.y <= apple.center.y + snake_radius)
+    if(head.center.x >= (apple.center.x - (snake_radius * 2)) && head.center.x <= (apple.center.x + (snake_radius * 2))
+       && head.center.y >= (apple.center.y - (snake_radius * 2)) && head.center.y <= (apple.center.y + (snake_radius * 2)))
     {
         apple.hide();
         //apple.center = { rand() % 315, rand() % 235 };
@@ -489,21 +488,6 @@ int main()
             lcd_put_pixel(ofs + i, ofs + l_limit, l_color_blue);
             lcd_put_pixel(ofs + l_limit, ofs + i, l_color_white);
         }*/
-
-    /*Character char1(point3, 'h', white, black);
-    char1.draw();
-
-    Text text1(point1, "Kokos", cyan, black, true);
-    text1.draw();
-    Text text2({30, 50}, "Kokoska", bordo, black, false);
-    text2.draw();*/
-
-    /*for(int i = 0; i < 10; i++)
-    {
-        text1.move();
-        cv::imshow( LCD_NAME, g_canvas );
-        cv::waitKey( 0 );
-    }*/
 
     for (int i = 0; i < 2; i++)
     {
@@ -547,8 +531,6 @@ int main()
         if(counter == 20)
             smer = RIGHT;*/
         
-        
-
         move();
         eat();
 

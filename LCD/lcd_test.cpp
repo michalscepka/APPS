@@ -23,6 +23,11 @@
 #define WIDTH 36
 #define HEIGHT 36
 
+#define UP 0
+#define DOWN 1
+#define LEFT 2
+#define RIGHT 3
+
 // Serial line for printf output
 Serial pc(USBTX, USBRX);
 
@@ -323,6 +328,11 @@ struct PWM
 };
 
 //--- ZMACKNUTI BUTTONU ---
+DigitalIn but1(PTC9);
+DigitalIn but2(PTC10);
+DigitalIn but3(PTC11);
+DigitalIn but4(PTC12);
+
 InterruptIn button0(PTC9);
 InterruptIn button1(PTC10);
 InterruptIn button2(PTC11);
@@ -407,8 +417,6 @@ RGB green = {0, 255, 0};
 RGB blue = {0, 0, 255};
 RGB red = {255, 0, 0};
 RGB deeppink = {255, 20, 147};
-
-Text text1({ point3.x, point3.y + 50 }, "Hello!", cyan, black, true);
 
 Circle circle1(analog_h_p, 52, cyan, black);
 int seconds_counter = 0;
@@ -533,23 +541,70 @@ void analog_clocks()
     }
 }
 
-vector<Circle> snake;
 int smer = 0;
-Circle head({100, 100}, 5, white, black);
+Point2D snake_start = {50, 100};
+Circle head(snake_start, 5, white, black);
+vector<Circle> snake;
+Circle apple({ snake_start.x + 20, snake_start.y }, 5, red, black);
+int step = 10;
+int snake_radius = 5;
+bool ocas_add = false;
 
 void move()
 {
+    Point2D head_original = head.center;
+
 	head.hide();
-	if(smer == 0)
-		head.center.y -= 3;
-	if(smer == 1)
-			head.center.y += 3;
-	if(smer == 2)
-			head.center.x -= 3;
-	if(smer == 3)
-			head.center.x += 3;
+    for(int i = 0; i < snake.size(); i++)
+    {
+        snake[i].hide();
+    }
+
+    switch (smer)
+    {
+    case UP:
+        head.center.y -= step;
+        break;
+    case DOWN:
+        head.center.y += step;
+        break;
+    case LEFT:
+        head.center.x -= step;
+        break;
+    case RIGHT:
+        head.center.x += step;
+        break;
+    default:
+        break;
+    }
 
 	head.draw();
+    snake.insert(snake.begin(), Circle(head_original, snake_radius, green, black));
+    if(!ocas_add)
+    {
+        snake.pop_back();
+    }
+    else
+    {
+        ocas_add = false;
+    }
+
+    for(int i = 0; i < snake.size(); i++)
+    {
+        snake[i].draw();
+    }
+}
+
+void eat()
+{
+    if(head.center.x >= (apple.center.x - (snake_radius * 2)) && head.center.x <= (apple.center.x + (snake_radius * 2))
+       && head.center.y >= (apple.center.y - (snake_radius * 2)) && head.center.y <= (apple.center.y + (snake_radius * 2)))
+    {
+        apple.hide();
+        apple.center = { rand() % 315, rand() % 235 };
+        apple.draw();
+        ocas_add = true;
+    }
 }
 
 int main()
@@ -590,12 +645,7 @@ int main()
 	int idx = 0; // Just for printf below
 	//--- ZMACKNUTI BUTTONU ---
 
-	//PWM backl = { bl, 1 };
-
-	/*Character char1(point3, '!', white, black);
-    char1.draw();
-
-	circle1.draw();
+	/*circle1.draw();
     rucicka_s.draw();
     rucicka_m.draw();
 
@@ -603,68 +653,79 @@ int main()
 	//t2.attach(&clocks, 1);
 	//t2.attach(&digital_clocks, 1);
 	t3.attach(&move, 0.5);
-	t4.attach(&analog_clocks, 1);
-
-	Triangle triangle1(triangle_p, 100, deeppink, black);
-	triangle1.draw();
-
-	text1.draw();*/
+	t4.attach(&analog_clocks, 1);*/
 
 	srand(time(0));
 
-	Point2D apple_pos = { rand() % 310, rand() % 230 };
-	lcd_put_pixel(apple_pos.x, apple_pos.y, l_color_red);
-
+	apple.draw();
 	head.draw();
+	snake.push_back(Circle({ snake_start.x - 10, snake_start.y}, 5, green, black));
+	snake.push_back(Circle({ snake_start.x - 20, snake_start.y}, 5, green, black));
+	snake.push_back(Circle({ snake_start.x - 30, snake_start.y}, 5, green, black));
+	snake.push_back(Circle({ snake_start.x - 40, snake_start.y}, 5, green, black));
 
-
-	snake.push_back(Circle( {100, 100}, 5, white, black));
-	snake.push_back(Circle( {110, 100}, 5, white, black));
-	snake.push_back(Circle( {120, 100}, 5, white, black));
-	snake.push_back(Circle( {130, 100}, 5, white, black));
-	snake.push_back(Circle( {140, 100}, 5, white, black));
-
-	/*for(int i = 0; i < 5; i++)
+	for(int i = 0; i < snake.size(); i++)
 	{
 		snake[i].draw();
-	}*/
+	}
 
 	t1.attach(&move, 0.2);
 
+	smer = RIGHT;
 	while(1)
 	{
-		/*for (int i = 0; i < T; i++)
-		{
-			backl.Update(i);
-			wait_ms(1);
-		}*/
-
 		//--- ZMACKNUTI BUTTONU ---
-		if (button0_pressed)	// Set when button is pressed
+		/*if (button0_pressed)	// Set when button is pressed
 		{
 			button0_pressed = false;
-			smer = 0;
+			smer = LEFT;
 			pc.printf("Button0 pressed %d\r\n", idx++);
 		}
 		if (button1_pressed)	// Set when button is pressed
 		{
 			button1_pressed = false;
-			smer = 1;
+			smer = DOWN;
 			pc.printf("Button1 pressed %d\r\n", idx++);
 		}
 		if (button2_pressed)	// Set when button is pressed
 		{
 			button2_pressed = false;
-			smer = 2;
+			smer = UP;
 			pc.printf("Button2 pressed %d\r\n", idx++);
 		}
 		if (button3_pressed)	// Set when button is pressed
 		{
 			button3_pressed = false;
-			smer = 3;
+			smer = RIGHT;
 			pc.printf("Button 3 pressed %d\r\n", idx++);
-		}
+		}*/
 		//--- ZMACKNUTI BUTTONU ---
+
+		if(!but1)
+		{
+			smer = LEFT;
+			pc.printf("Button0 pressed %d\r\n", idx++);
+			wait_ms(150);
+		}
+		if(!but2)
+		{
+			smer = DOWN;
+			pc.printf("Button1 pressed %d\r\n", idx++);
+			wait_ms(150);
+		}
+		if(!but3)
+		{
+			smer = UP;
+			pc.printf("Button2 pressed %d\r\n", idx++);
+			wait_ms(150);
+		}
+		if(!but4)
+		{
+			smer = RIGHT;
+			pc.printf("Button3 pressed %d\r\n", idx++);
+			wait_ms(150);
+		}
+		eat();
 	}
 
 	return 0;
