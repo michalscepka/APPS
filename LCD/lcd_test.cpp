@@ -14,26 +14,27 @@
 #include "mbed.h"
 #include "lcd_lib.h"
 #include <string>
+#include <vector>
 //#include "font8x8.cpp"		//neodkomentovavat
-//#include "font22x36_msb.h"
+#include "font22x36_msb.h"
 
-#define WIDTH 8
-#define HEIGHT 8
-//#define WIDTH 36
-//#define HEIGHT 36
+//#define WIDTH 8
+//#define HEIGHT 8
+#define WIDTH 36
+#define HEIGHT 36
 
 // Serial line for printf output
 Serial pc(USBTX, USBRX);
 
 // two dimensional array with fixed size font
-extern uint8_t font8x8[256][8];		//odkomenovat u 8x8
+//extern uint8_t font8x8[256][8];		//odkomenovat u 8x8
 
 using namespace std;
 
 DigitalOut bl(PTC3, 0);		// backlight
 
-int offset = 8;
-int dist = 1;
+int offset = 22;
+int dist = 10;
 bool sviti = true;
 int T = 15;
 
@@ -56,6 +57,8 @@ public:
     RGB fg_color, bg_color;
 
     // constructor
+    GraphElement(){}
+
     GraphElement( RGB t_fg_color, RGB t_bg_color ) :
         fg_color( t_fg_color ), bg_color( t_bg_color ) {}
 
@@ -93,7 +96,6 @@ public:
     // Position of Pixel
     Point2D pos;
 };
-
 
 class Circle : public GraphElement
 {
@@ -160,12 +162,12 @@ public:
     {
         for(int y = 0; y < HEIGHT; y++)
         {
-            int radek_fontu = font8x8[character][y];
-			//int radek_fontu = font[character][y];
+            //int radek_fontu = font8x8[character][y];
+			int radek_fontu = font[character][y];
             for(int x = 0; x < WIDTH; x++)
             {
-                if(radek_fontu & (1 << x)) drawPixel(pos.x + x, pos.y + y);		//LSB
-				//if(radek_fontu & (1 << x)) drawPixel(pos.x - x + offset, pos.y + y);    //MSB
+                //if(radek_fontu & (1 << x)) drawPixel(pos.x + x, pos.y + y);		//LSB
+				if(radek_fontu & (1 << x)) drawPixel(pos.x - x + WIDTH, pos.y + y);    //MSB
             }
         }
     }
@@ -224,19 +226,19 @@ public:
         {
             for(int y = 0; y < HEIGHT; y++)
             {
-                int radek_fontu = font8x8[str[i]][y];
-				//int radek_fontu = font[str[i]][y];
+                //int radek_fontu = font8x8[str[i]][y];
+				int radek_fontu = font[str[i]][y];
                 for(int x = 0; x < WIDTH; x++)
                 {
                     if(horizontal)
                     {
-						if(radek_fontu & (1 << x)) drawPixel(pos.x + x + offs, pos.y + y);           //LSB
-                        //if(radek_fontu & (1 << x)) drawPixel(pos.x - x + offset + offs, pos.y + y);    //MSB
+						//if(radek_fontu & (1 << x)) drawPixel(pos.x + x + offs, pos.y + y);           //LSB
+                        if(radek_fontu & (1 << x)) drawPixel(pos.x - x + WIDTH + offs, pos.y + y);    //MSB
                     }
                     else
                     {
-                        if(radek_fontu & (1 << x)) drawPixel(pos.x + x, pos.y + y + offs);			//LSB
-						//if(radek_fontu & (1 << x)) drawPixel(pos.x - x + offset, pos.y + y + offs);    //MSB
+                        //if(radek_fontu & (1 << x)) drawPixel(pos.x + x, pos.y + y + offs);			//LSB
+						if(radek_fontu & (1 << x)) drawPixel(pos.x - x + WIDTH, pos.y + y + offs);    //MSB
                     }
                 }
             }
@@ -249,6 +251,44 @@ public:
         hide();
         pos.x += dist;
         draw();
+    }
+};
+
+class Triangle : public GraphElement
+{
+public:
+    // Center of circle
+    Point2D center;
+    // Radius of circle
+    int strana;
+
+    RGB fg, bg;
+    double vyska;
+    Point2D point_c1, point_c2, point_c3, point_a1;
+    Line *strana_a, *strana_b, *strana_c;
+
+    Triangle( Point2D t_center, int t_strana, RGB t_fg, RGB t_bg ) :
+        center( t_center ), strana( t_strana ), GraphElement( t_fg, t_bg )
+    {
+    	this->fg = t_fg;
+    	this->bg = t_bg;
+
+    	this->vyska = sqrt(pow(strana, 2) - pow(strana/ 2.0, 2));
+    	this->point_c2 = { center.x, center.y + (vyska / 3) };
+    	this->point_c1 = {center.x - (strana / 2), center.y + (vyska / 3)};
+    	this->point_c3 = {center.x + (strana / 2), center.y + (vyska / 3)};
+    	this->point_a1 = {center.x, center.y - ((vyska / 3) * 2)};
+
+    	this->strana_a = new Line({point_c1.x, point_c1.y}, {point_a1.x, point_a1.y}, fg, bg);
+    	this->strana_c = new Line({point_c1.x, point_c1.y}, {point_c3.x, point_c3.y}, fg, bg);
+    	this->strana_b = new Line({point_c3.x, point_c3.y}, {point_a1.x, point_a1.y}, fg, bg);
+    };
+
+    void draw()
+    {
+    	strana_c->draw();
+    	strana_a->draw();
+    	strana_b->draw();
     }
 };
 
@@ -283,19 +323,50 @@ struct PWM
 };
 
 //--- ZMACKNUTI BUTTONU ---
-DigitalOut led1(PTA1);
-InterruptIn button1(PTC9);
-volatile bool button1_pressed = false; // Used in the main loop
-volatile bool button1_enabled = true; // Used for debouncing
-Timeout button1_timeout; // Used for debouncing
+InterruptIn button0(PTC9);
+InterruptIn button1(PTC10);
+InterruptIn button2(PTC11);
+InterruptIn button3(PTC12);
+volatile bool button0_pressed = false; // Used in the main loop
+volatile bool button1_pressed = false;
+volatile bool button2_pressed = false;
+volatile bool button3_pressed = false;
+volatile bool button0_enabled = true; // Used for debouncing
+volatile bool button1_enabled = true;
+volatile bool button2_enabled = true;
+volatile bool button3_enabled = true;
+Timeout button0_timeout; // Used for debouncing
+Timeout button1_timeout;
+Timeout button2_timeout;
+Timeout button3_timeout;
 
 // Enables button when bouncing is over
+void button0_enabled_cb(void)
+{
+    button0_enabled = true;
+}
 void button1_enabled_cb(void)
 {
     button1_enabled = true;
 }
+void button2_enabled_cb(void)
+{
+    button2_enabled = true;
+}
+void button3_enabled_cb(void)
+{
+    button3_enabled = true;
+}
 
 // ISR handling button pressed event
+void button0_onpressed_cb(void)
+{
+    if (button0_enabled) { // Disabled while the button is bouncing
+        button0_enabled = false;
+        button0_pressed = true; // To be read by the main loop
+        button0_timeout.attach(callback(button0_enabled_cb), 0.2); // Debounce time 300 ms
+    }
+}
 void button1_onpressed_cb(void)
 {
     if (button1_enabled) { // Disabled while the button is bouncing
@@ -304,13 +375,30 @@ void button1_onpressed_cb(void)
         button1_timeout.attach(callback(button1_enabled_cb), 0.2); // Debounce time 300 ms
     }
 }
+void button2_onpressed_cb(void)
+{
+    if (button2_enabled) { // Disabled while the button is bouncing
+        button2_enabled = false;
+        button2_pressed = true; // To be read by the main loop
+        button2_timeout.attach(callback(button2_enabled_cb), 0.2); // Debounce time 300 ms
+    }
+}
+void button3_onpressed_cb(void)
+{
+    if (button3_enabled) { // Disabled while the button is bouncing
+        button3_enabled = false;
+        button3_pressed = true; // To be read by the main loop
+        button3_timeout.attach(callback(button3_enabled_cb), 0.2); // Debounce time 300 ms
+    }
+}
 //--- ZMACKNUTI BUTTONU ---
 
-Point2D point1 = {10, 10};
+Point2D point1 = {100, 100};
 Point2D point2 = {120, 120};
 Point2D point3 = {0, 0};
-Point2D point4 = {150, 50};
-Point2D point5 = {150, 150};
+Point2D digital_h_p = {150, 50};
+Point2D analog_h_p = {250, 150};
+Point2D triangle_p = {100, 150};
 RGB black = {0, 0, 0};
 RGB white = {255, 255, 255};
 RGB bordo = {128, 0, 32};
@@ -318,31 +406,32 @@ RGB cyan = {0, 255, 255};
 RGB green = {0, 255, 0};
 RGB blue = {0, 0, 255};
 RGB red = {255, 0, 0};
+RGB deeppink = {255, 20, 147};
 
-Text text1(point1, "Kokos", cyan, black, true);
+Text text1({ point3.x, point3.y + 50 }, "Hello!", cyan, black, true);
 
-Circle circle1(point5, 52, cyan, black);
+Circle circle1(analog_h_p, 52, cyan, black);
 int seconds_counter = 0;
 float timee = 0.0f;
 float scale = 50;
 float time_m = 0;
-Line rucicka_s({ point5.x, point5.y }, { (point5.x + (int)(sin(timee) * scale)), (point5.y - (int)(cos(timee) * scale)) }, red, black);
-Line rucicka_m({ point5.x, point5.y }, { (point5.x + (int)(sin(timee) * scale)), (point5.y - (int)(cos(timee) * scale)) }, white, black);
+Line rucicka_s({ analog_h_p.x, analog_h_p.y }, { (analog_h_p.x + (int)(sin(timee) * scale)), (analog_h_p.y - (int)(cos(timee) * scale)) }, red, black);
+Line rucicka_m({ analog_h_p.x, analog_h_p.y }, { (analog_h_p.x + (int)(sin(timee) * scale)), (analog_h_p.y - (int)(cos(timee) * scale)) }, white, black);
 
 Character watch[6] =
 {
-	Character({point4.x, point4.y}, '0', white, black),
-	Character({point4.x + offset, point4.y}, '0', white, black),
-	Character({point4.x + offset * 3, point4.y}, '0', white, black),
-	Character({point4.x + offset * 4, point4.y}, '0', white, black),
-	Character({point4.x + offset * 6, point4.y}, '0', white, black),
-	Character({point4.x + offset * 7, point4.y}, '0' - 1, white, black)
+	Character({digital_h_p.x, digital_h_p.y}, '0', white, black),
+	Character({digital_h_p.x + offset, digital_h_p.y}, '0', white, black),
+	Character({digital_h_p.x + offset * 3, digital_h_p.y}, '0', white, black),
+	Character({digital_h_p.x + offset * 4, digital_h_p.y}, '0', white, black),
+	Character({digital_h_p.x + offset * 6, digital_h_p.y}, '0', white, black),
+	Character({digital_h_p.x + offset * 7, digital_h_p.y}, '0' - 1, white, black)
 };
 
 Character dots[2] =
 {
-	Character({point4.x + offset * 2, point4.y}, ':', white, black),
-	Character({point4.x + offset * 5, point4.y}, ':', white, black)
+	Character({digital_h_p.x + offset * 2, digital_h_p.y}, ':', white, black),
+	Character({digital_h_p.x + offset * 5, digital_h_p.y}, ':', white, black)
 };
 
 void dotsBlick()
@@ -402,7 +491,7 @@ void digital_clocks()
             add_time(0, 1, '2', '9');
         }
     }
-    
+
     if (watch[0].character >= '2' && watch[1].character >= '4')
     {
         for(int i = 0; i < 6; i++)
@@ -414,7 +503,7 @@ void digital_clocks()
             watch[i].character = '0';
         }
     }
-    
+
     for(int i = 0; i < 6; i++)
     {
         watch[i].draw();
@@ -425,10 +514,10 @@ void analog_clocks()
 {
     rucicka_s.hide();
     rucicka_m.hide();
-    
-    rucicka_s.pos2 = { (point5.x + (int)(sin(timee) * scale)), (point5.y - (int)(cos(timee) * scale)) };
+
+    rucicka_s.pos2 = { (analog_h_p.x + (int)(sin(timee) * scale)), (analog_h_p.y - (int)(cos(timee) * scale)) };
     rucicka_s.draw();
-    rucicka_m.pos2 = { (point5.x + (int)(sin(time_m) * scale)), (point5.y - (int)(cos(time_m) * scale)) };
+    rucicka_m.pos2 = { (analog_h_p.x + (int)(sin(time_m) * scale)), (analog_h_p.y - (int)(cos(time_m) * scale)) };
     rucicka_m.draw();
 
     seconds_counter++;
@@ -444,29 +533,39 @@ void analog_clocks()
     }
 }
 
+vector<Circle> snake;
+int smer = 0;
+Circle head({100, 100}, 5, white, black);
+
 void move()
 {
-	text1.hide();
-	text1.pos.x += dist;
-	text1.draw();
+	head.hide();
+	if(smer == 0)
+		head.center.y -= 3;
+	if(smer == 1)
+			head.center.y += 3;
+	if(smer == 2)
+			head.center.x -= 3;
+	if(smer == 3)
+			head.center.x += 3;
+
+	head.draw();
 }
 
 int main()
 {
 	// Serial line initialization
 	pc.baud(115200);
-
  	lcd_init();				// LCD initialization
-
 	lcd_clear();			// LCD clear screen
 
-	/*int l_color_red = 0xF800;
+	int l_color_red = 0xF800;
 	int l_color_green = 0x07E0;
 	int l_color_blue = 0x001F;
 	int l_color_white = 0xFFFF;
 
 	// simple animation display four color square using LCD_put_pixel function
-	int l_limit = 200;
+	/*int l_limit = 200;
 	for (int ofs = 0; ofs < 20; ofs++) // square offset in x and y axis
 		for (int i = 0; i < l_limit; i++)
 		{
@@ -476,45 +575,61 @@ int main()
 			lcd_put_pixel(ofs + l_limit, ofs + i, l_color_white);
 		}*/
 
-	Ticker t1, t2, t3;
+	Ticker t1, t2, t3, t4;
 
 	//--- ZMACKNUTI BUTTONU ---
+	button0.mode(PullUp); // Activate pull-up
+	button0.fall(callback(button0_onpressed_cb)); // Attach ISR to handle button press event
 	button1.mode(PullUp); // Activate pull-up
 	button1.fall(callback(button1_onpressed_cb)); // Attach ISR to handle button press event
+	button2.mode(PullUp); // Activate pull-up
+	button2.fall(callback(button2_onpressed_cb)); // Attach ISR to handle button press event
+	button3.mode(PullUp); // Activate pull-up
+	button3.fall(callback(button3_onpressed_cb)); // Attach ISR to handle button press event
 
 	int idx = 0; // Just for printf below
 	//--- ZMACKNUTI BUTTONU ---
 
 	//PWM backl = { bl, 1 };
 
-	Character char1(point3, 'h', white, black);
+	/*Character char1(point3, '!', white, black);
     char1.draw();
-
-	Line line1(point1, point2, red, black);
-	line1.draw();
-	//line1.hide();
-
-	/*if(watch[0].character < '2')
-	{
-		watch[0].hide();
-		watch[0].character++;
-		watch[0].draw();
-	}*/
-
-	/*Circle circle1({150, 150}, 50, red, black);
-	circle1.draw();
-
-	Character char1(point2, 'A', white, black);
-	char1.draw();*/
 
 	circle1.draw();
     rucicka_s.draw();
     rucicka_m.draw();
 
-	t1.attach(&dotsBlick, 0.5);
+	//t1.attach(&dotsBlick, 0.5);
 	//t2.attach(&clocks, 1);
-	t2.attach(&digital_clocks, 1);
-	t3.attach(&move, 0.025);
+	//t2.attach(&digital_clocks, 1);
+	t3.attach(&move, 0.5);
+	t4.attach(&analog_clocks, 1);
+
+	Triangle triangle1(triangle_p, 100, deeppink, black);
+	triangle1.draw();
+
+	text1.draw();*/
+
+	srand(time(0));
+
+	Point2D apple_pos = { rand() % 310, rand() % 230 };
+	lcd_put_pixel(apple_pos.x, apple_pos.y, l_color_red);
+
+	head.draw();
+
+
+	snake.push_back(Circle( {100, 100}, 5, white, black));
+	snake.push_back(Circle( {110, 100}, 5, white, black));
+	snake.push_back(Circle( {120, 100}, 5, white, black));
+	snake.push_back(Circle( {130, 100}, 5, white, black));
+	snake.push_back(Circle( {140, 100}, 5, white, black));
+
+	/*for(int i = 0; i < 5; i++)
+	{
+		snake[i].draw();
+	}*/
+
+	t1.attach(&move, 0.2);
 
 	while(1)
 	{
@@ -525,17 +640,29 @@ int main()
 		}*/
 
 		//--- ZMACKNUTI BUTTONU ---
+		if (button0_pressed)	// Set when button is pressed
+		{
+			button0_pressed = false;
+			smer = 0;
+			pc.printf("Button0 pressed %d\r\n", idx++);
+		}
 		if (button1_pressed)	// Set when button is pressed
 		{
 			button1_pressed = false;
-			pc.printf("Button pressed %d\r\n", idx++);
-			//led1 = !led1;
-
-			char1.hide();
-			char1.character++;
-			char1.draw();
-
-			//backl.brightness -= 0.1f;
+			smer = 1;
+			pc.printf("Button1 pressed %d\r\n", idx++);
+		}
+		if (button2_pressed)	// Set when button is pressed
+		{
+			button2_pressed = false;
+			smer = 2;
+			pc.printf("Button2 pressed %d\r\n", idx++);
+		}
+		if (button3_pressed)	// Set when button is pressed
+		{
+			button3_pressed = false;
+			smer = 3;
+			pc.printf("Button 3 pressed %d\r\n", idx++);
 		}
 		//--- ZMACKNUTI BUTTONU ---
 	}

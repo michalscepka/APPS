@@ -395,18 +395,91 @@ void analog_clocks()
     }
 }
 
+int smer = 0;
+Point2D snake_start = {50, 100};
+Circle head(snake_start, 5, white, black);
+vector<Circle> snake;
+//Circle apple({ rand() % 310, snake_start.y }, 5, red, black);
+Circle apple({ snake_start.x + 20, snake_start.y }, 5, red, black);
+#define UP 0
+#define DOWN 1
+#define LEFT 2
+#define RIGHT 3
+int step = 10;
+int snake_radius = 5;
+bool ocas_add = false;
+
+void move()
+{
+    Point2D head_original = head.center;
+
+	head.hide();
+    for(int i = 0; i < snake.size(); i++)
+    {
+        snake[i].hide();
+    }
+
+    switch (smer)
+    {
+    case UP:
+        head.center.y -= step;
+        break;
+    case DOWN:
+        head.center.y += step;
+        break;
+    case LEFT:
+        head.center.x -= step;
+        break;
+    case RIGHT:
+        head.center.x += step;
+        break;
+    default:
+        break;
+    }
+
+	head.draw();
+    snake.insert(snake.begin(), Circle(head_original, snake_radius, green, black));
+    if(!ocas_add)
+    {
+        snake.pop_back();
+    }
+    else
+    {
+        ocas_add = false;
+    }
+    
+
+    for(int i = 0; i < snake.size(); i++)
+    {
+        snake[i].draw();
+    }
+}
+
+void eat()
+{
+    if(head.center.x >= apple.center.x - snake_radius && head.center.x <= apple.center.x + snake_radius
+       && head.center.y >= apple.center.y - snake_radius && head.center.y <= apple.center.y + snake_radius)
+    {
+        apple.hide();
+        //apple.center = { rand() % 315, rand() % 235 };
+        apple.center = { head.center.x + 30, head.center.y };
+        apple.draw();
+        ocas_add = true;
+    }
+}
+
 int main()
 {
     lcd_init();                     // LCD initialization
 
     lcd_clear();                    // LCD clear screen
 
-    /*int l_color_red = 0xF800;
+    int l_color_red = 0xF800;
     int l_color_green = 0x07E0;
     int l_color_blue = 0x001F;
     int l_color_white = 0xFFFF;
 
-    // simple animation display four color square using LCD_put_pixel function
+    /*// simple animation display four color square using LCD_put_pixel function
     int l_limit = 200;
     for ( int ofs = 0; ofs < 20; ofs++ ) // square offset in x and y axis
         for ( int i = 0; i < l_limit; i++ )
@@ -417,13 +490,13 @@ int main()
             lcd_put_pixel(ofs + l_limit, ofs + i, l_color_white);
         }*/
 
-    Character char1(point3, 'h', white, black);
+    /*Character char1(point3, 'h', white, black);
     char1.draw();
 
     Text text1(point1, "Kokos", cyan, black, true);
     text1.draw();
     Text text2({30, 50}, "Kokoska", bordo, black, false);
-    text2.draw();
+    text2.draw();*/
 
     /*for(int i = 0; i < 10; i++)
     {
@@ -441,13 +514,48 @@ int main()
     rucicka_s.draw();
     rucicka_m.draw();
 
+    srand(time(0));
+
+    apple.draw();
+    head.draw();
+    snake.push_back(Circle({ snake_start.x - 10, snake_start.y}, 5, green, black));
+    snake.push_back(Circle({ snake_start.x - 20, snake_start.y}, 5, green, black));
+    snake.push_back(Circle({ snake_start.x - 30, snake_start.y}, 5, green, black));
+    snake.push_back(Circle({ snake_start.x - 40, snake_start.y}, 5, green, black));
+
+    for(int i = 0; i < snake.size(); i++)
+    {
+        snake[i].draw();
+    }
+
+    cv::imshow( LCD_NAME, g_canvas );
+    cv::waitKey( 0 );
+    int counter = 0;
+    smer = RIGHT;
+
     while(true)
     {
         digital_clocks();
         analog_clocks();
 
+        /*if(counter == 5)
+            smer = DOWN;
+        if(counter == 10)
+            smer = LEFT;
+        if(counter == 15)
+            smer = UP;
+        if(counter == 20)
+            smer = RIGHT;*/
+        
+        
+
+        move();
+        eat();
+
+        counter++;
         cv::imshow( LCD_NAME, g_canvas );
         cv::waitKey( 0 );
+
     }
 
     cv::imshow( LCD_NAME, g_canvas );   // refresh content of "LCD"
