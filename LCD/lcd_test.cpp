@@ -110,6 +110,8 @@ public:
     // Radius of circle
     int32_t radius;
 
+    Circle(){}
+
     Circle( Point2D t_center, int32_t t_radius, RGB t_fg, RGB t_bg ) :
         center( t_center ), radius( t_radius ), GraphElement( t_fg, t_bg ) {};
 
@@ -297,35 +299,30 @@ public:
     }
 };
 
-struct PWM
+class Rectangle : public GraphElement
 {
-	DigitalOut LED;
-	float brightness;
+public:
+    // Center of circle
+    Point2D start;
+    // Radius of rectangle
+    int size_x, size_y;
 
-	void Update(int Tick)
-	{
-		if (Tick < (T * brightness))
-		{
-			LED = true;
-		}
-		else
-		{
-			LED = false;
-		}
-	}
+    Rectangle( Point2D t_start, int t_size_x, int t_size_y, RGB t_fg, RGB t_bg ) :
+        start( t_start ), size_x( t_size_x ), size_y( t_size_y ), GraphElement( t_fg, t_bg ) {};
 
-//Return True if brightness is bigger than 1 (100%), false if otherwise
-	bool HasMaxBrigthness()
-	{
-		return brightness > 1;
-	}
-
-//Return True if brightness is lower than 0 (0%), false if otherwise
-	bool HasMinBrigthness()
-	{
-		return brightness < 0;
-	}
+    void draw()
+    {
+    	//Line Lin1({start.x,start.y},{start.x + size_x,start.y}, fg_color,bg_color);
+    	//Lin1.draw();
+        Line Lin2({start.x + size_x,start.y},{start.x + size_x,start.y + size_y}, fg_color,bg_color);
+        Lin2.draw();
+        //Line Lin3({start.x + size_x,start.y + size_y},{start.x,start.y + size_y} , fg_color,bg_color);
+        //Lin3.draw();
+        Line Lin4({start.x,start.y + size_y},start, fg_color,bg_color);
+        Lin4.draw();
+    } // IMPLEMENT!!!
 };
+
 
 //--- ZMACKNUTI BUTTONU ---
 DigitalIn but1(PTC9);
@@ -333,39 +330,16 @@ DigitalIn but2(PTC10);
 DigitalIn but3(PTC11);
 DigitalIn but4(PTC12);
 
+/*
 InterruptIn button0(PTC9);
-InterruptIn button1(PTC10);
-InterruptIn button2(PTC11);
-InterruptIn button3(PTC12);
 volatile bool button0_pressed = false; // Used in the main loop
-volatile bool button1_pressed = false;
-volatile bool button2_pressed = false;
-volatile bool button3_pressed = false;
 volatile bool button0_enabled = true; // Used for debouncing
-volatile bool button1_enabled = true;
-volatile bool button2_enabled = true;
-volatile bool button3_enabled = true;
 Timeout button0_timeout; // Used for debouncing
-Timeout button1_timeout;
-Timeout button2_timeout;
-Timeout button3_timeout;
 
 // Enables button when bouncing is over
 void button0_enabled_cb(void)
 {
     button0_enabled = true;
-}
-void button1_enabled_cb(void)
-{
-    button1_enabled = true;
-}
-void button2_enabled_cb(void)
-{
-    button2_enabled = true;
-}
-void button3_enabled_cb(void)
-{
-    button3_enabled = true;
 }
 
 // ISR handling button pressed event
@@ -377,31 +351,7 @@ void button0_onpressed_cb(void)
         button0_timeout.attach(callback(button0_enabled_cb), 0.2); // Debounce time 300 ms
     }
 }
-void button1_onpressed_cb(void)
-{
-    if (button1_enabled) { // Disabled while the button is bouncing
-        button1_enabled = false;
-        button1_pressed = true; // To be read by the main loop
-        button1_timeout.attach(callback(button1_enabled_cb), 0.2); // Debounce time 300 ms
-    }
-}
-void button2_onpressed_cb(void)
-{
-    if (button2_enabled) { // Disabled while the button is bouncing
-        button2_enabled = false;
-        button2_pressed = true; // To be read by the main loop
-        button2_timeout.attach(callback(button2_enabled_cb), 0.2); // Debounce time 300 ms
-    }
-}
-void button3_onpressed_cb(void)
-{
-    if (button3_enabled) { // Disabled while the button is bouncing
-        button3_enabled = false;
-        button3_pressed = true; // To be read by the main loop
-        button3_timeout.attach(callback(button3_enabled_cb), 0.2); // Debounce time 300 ms
-    }
-}
-//--- ZMACKNUTI BUTTONU ---
+//--- ZMACKNUTI BUTTONU ---*/
 
 Point2D point1 = {100, 100};
 Point2D point2 = {120, 120};
@@ -417,6 +367,8 @@ RGB green = {0, 255, 0};
 RGB blue = {0, 0, 255};
 RGB red = {255, 0, 0};
 RGB deeppink = {255, 20, 147};
+
+Text text1({ point3.x, point3.y + 50 }, "Hello!", cyan, black, true);
 
 Circle circle1(analog_h_p, 52, cyan, black);
 int seconds_counter = 0;
@@ -550,7 +502,7 @@ int step = 10;
 int snake_radius = 5;
 bool ocas_add = false;
 
-void move()
+void moveSnake()
 {
     Point2D head_original = head.center;
 
@@ -607,6 +559,47 @@ void eat()
     }
 }
 
+//Rectangle rec1({140, 3}, 40, 20, white, black);
+Circle rec1({140, 3}, 5, white, black);
+
+void moveRect()
+{
+
+
+	if(!but2 && rec1.center.x < 280)
+	{
+		rec1.hide();
+		rec1.center.x += 1;
+		rec1.draw();
+	}
+
+	else if (!but1 && rec1.center.x > 0)
+	{
+		rec1.hide();
+		rec1.center.x -= 1;
+		rec1.draw();
+	}
+
+
+}
+
+vector<Circle> balls;
+
+void moveObject()
+{
+	for(int i = 0; i < balls.size(); i++)
+	{
+		balls[i].hide();
+		balls[i].center.y += 10;
+		balls[i].draw();
+		if(balls[i].center.y >= 220)
+		{
+			balls[i].hide();
+			balls.erase(balls.begin());
+		}
+	}
+}
+
 int main()
 {
 	// Serial line initialization
@@ -630,20 +623,13 @@ int main()
 			lcd_put_pixel(ofs + l_limit, ofs + i, l_color_white);
 		}*/
 
-	Ticker t1, t2, t3, t4;
+	Ticker t1, t2, t3, t4, t5;
 
-	//--- ZMACKNUTI BUTTONU ---
+	/*//--- ZMACKNUTI BUTTONU ---
 	button0.mode(PullUp); // Activate pull-up
-	button0.fall(callback(button0_onpressed_cb)); // Attach ISR to handle button press event
-	button1.mode(PullUp); // Activate pull-up
-	button1.fall(callback(button1_onpressed_cb)); // Attach ISR to handle button press event
-	button2.mode(PullUp); // Activate pull-up
-	button2.fall(callback(button2_onpressed_cb)); // Attach ISR to handle button press event
-	button3.mode(PullUp); // Activate pull-up
-	button3.fall(callback(button3_onpressed_cb)); // Attach ISR to handle button press event
-
+	button0.fall(callback(button0_onpressed_cb)); // Attach50 ISR to handle button press event
+	//--- ZMACKNUTI BUTTONU ---*/
 	int idx = 0; // Just for printf below
-	//--- ZMACKNUTI BUTTONU ---
 
 	/*circle1.draw();
     rucicka_s.draw();
@@ -655,53 +641,43 @@ int main()
 	t3.attach(&move, 0.5);
 	t4.attach(&analog_clocks, 1);*/
 
-	srand(time(0));
-
+	/*srand(time(0));
 	apple.draw();
 	head.draw();
 	snake.push_back(Circle({ snake_start.x - 10, snake_start.y}, 5, green, black));
 	snake.push_back(Circle({ snake_start.x - 20, snake_start.y}, 5, green, black));
 	snake.push_back(Circle({ snake_start.x - 30, snake_start.y}, 5, green, black));
 	snake.push_back(Circle({ snake_start.x - 40, snake_start.y}, 5, green, black));
-
 	for(int i = 0; i < snake.size(); i++)
 	{
 		snake[i].draw();
 	}
+	t1.attach(&moveSnake, 0.2);
+	smer = RIGHT;*/
 
-	t1.attach(&move, 0.2);
+	t5.attach(&moveObject, 0.5);
+	rec1.draw();
 
-	smer = RIGHT;
 	while(1)
 	{
+		moveRect();
+		if(!but3)
+		{
+			balls.push_back(Circle({rec1.center.x + rec1.radius/2.0, rec1.center.y + rec1.radius}, 8, white, black));
+			pc.printf("size: %d\r\n", balls.size());
+			//pc.printf("Button2 pressed %d\r\n", idx++);
+			wait_ms(150);
+		}
+
 		//--- ZMACKNUTI BUTTONU ---
 		/*if (button0_pressed)	// Set when button is pressed
 		{
 			button0_pressed = false;
 			smer = LEFT;
 			pc.printf("Button0 pressed %d\r\n", idx++);
-		}
-		if (button1_pressed)	// Set when button is pressed
-		{
-			button1_pressed = false;
-			smer = DOWN;
-			pc.printf("Button1 pressed %d\r\n", idx++);
-		}
-		if (button2_pressed)	// Set when button is pressed
-		{
-			button2_pressed = false;
-			smer = UP;
-			pc.printf("Button2 pressed %d\r\n", idx++);
-		}
-		if (button3_pressed)	// Set when button is pressed
-		{
-			button3_pressed = false;
-			smer = RIGHT;
-			pc.printf("Button 3 pressed %d\r\n", idx++);
 		}*/
 		//--- ZMACKNUTI BUTTONU ---
-
-		if(!but1)
+		/*if(!but1)
 		{
 			smer = LEFT;
 			pc.printf("Button0 pressed %d\r\n", idx++);
@@ -725,7 +701,7 @@ int main()
 			pc.printf("Button3 pressed %d\r\n", idx++);
 			wait_ms(150);
 		}
-		eat();
+		eat();*/
 	}
 
 	return 0;
