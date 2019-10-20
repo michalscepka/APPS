@@ -16,6 +16,7 @@
 #include <string>
 //#include "font8x8.cpp"		//neodkomentovavat
 #include "font22x36_msb.h"
+#include <vector>
 
 //#define WIDTH 8
 //#define HEIGHT 8
@@ -291,36 +292,6 @@ public:
     }
 };
 
-struct PWM
-{
-	DigitalOut LED;
-	float brightness;
-
-	void Update(int Tick)
-	{
-		if (Tick < (T * brightness))
-		{
-			LED = true;
-		}
-		else
-		{
-			LED = false;
-		}
-	}
-
-//Return True if brightness is bigger than 1 (100%), false if otherwise
-	bool HasMaxBrigthness()
-	{
-		return brightness > 1;
-	}
-
-//Return True if brightness is lower than 0 (0%), false if otherwise
-	bool HasMinBrigthness()
-	{
-		return brightness < 0;
-	}
-};
-
 //--- ZMACKNUTI BUTTONU ---
 DigitalOut led1(PTA1);
 InterruptIn button1(PTC9);
@@ -360,7 +331,7 @@ RGB blue = {0, 0, 255};
 RGB red = {255, 0, 0};
 RGB deeppink = {255, 20, 147};
 
-Text text1({ point3.x, point3.y + 50 }, "Hello!", cyan, black, true);
+//Text text1({ point3.x, point3.y + 50 }, "Hello!", cyan, black, true);
 
 Circle circle1(analog_h_p, 52, cyan, black);
 int seconds_counter = 0;
@@ -485,11 +456,42 @@ void analog_clocks()
     }
 }
 
+DigitalIn but1(PTC9);
+DigitalIn but2(PTC10);
+DigitalIn but3(PTC11);
+DigitalIn but4(PTC12);
+Point2D start = {20, 220};
+Circle circle(start, 10, white, black);
+float scalee = 25;
+float angle = 1.5;
+Line cara(start, {(start.x + (int)(sin(angle) * scalee)), (start.y - (int)(cos(angle) * scalee))}, white, black);
+
+vector<Circle> balls;
+vector<float> angles;
+vector<float> speeds;
+float speed = 1;
+
 void move()
 {
-	text1.hide();
-	text1.pos.x += dist;
-	text1.draw();
+	for(int i = 0; i < balls.size(); i++)
+	{
+		balls[i].hide();
+		balls[i].center.x += ((int)(sin(angles[i]) * 10 * speeds[i]));
+		balls[i].center.y -= ((int)(cos(angles[i]) * 10 * speeds[i]));
+		balls[i].draw();
+		if(balls[i].center.x >= 300)
+		{
+			balls[i].hide();
+			balls.erase(balls.begin());
+			angles.erase(angles.begin());
+		}
+		if(balls[i].center.y <= 10)
+		{
+			balls[i].hide();
+			balls.erase(balls.begin());
+			angles.erase(angles.begin());
+		}
+	}
 }
 
 int main()
@@ -524,49 +526,62 @@ int main()
 	int idx = 0; // Just for printf below
 	//--- ZMACKNUTI BUTTONU ---
 
-	//PWM backl = { bl, 1 };
-
-	Character char1(point3, '!', white, black);
-    char1.draw();
-
-	circle1.draw();
-    rucicka_s.draw();
-    rucicka_m.draw();
-
+	/*//Character char1(point3, '!', white, black);
+    //char1.draw();
+	//circle1.draw();
+    //rucicka_s.draw();
+    //rucicka_m.draw();
 	//t1.attach(&dotsBlick, 0.5);
 	//t2.attach(&clocks, 1);
 	//t2.attach(&digital_clocks, 1);
-	t3.attach(&move, 0.5);
-	t4.attach(&analog_clocks, 1);
+	//t3.attach(&move, 0.5);
+	//t4.attach(&analog_clocks, 1);
+	//Triangle triangle1(triangle_p, 100, deeppink, black);
+	//triangle1.draw();
+	//text1.draw();*/
 
-	Triangle triangle1(triangle_p, 100, deeppink, black);
-	triangle1.draw();
-
-	text1.draw();
-
+	circle.draw();
+	cara.draw();
+	t1.attach(&move, 0.2);
 
 	while(1)
 	{
-		/*for (int i = 0; i < T; i++)
-		{
-			backl.Update(i);
-			wait_ms(1);
-		}*/
-
-		//--- ZMACKNUTI BUTTONU ---
-		if (button1_pressed)	// Set when button is pressed
+		/*if (button1_pressed)	// Set when button is pressed
 		{
 			button1_pressed = false;
 			pc.printf("Button pressed %d\r\n", idx++);
-			//led1 = !led1;
-
-			char1.hide();
-			char1.character++;
-			char1.draw();
-
-			//backl.brightness -= 0.1f;
+		}*/
+		if(!but1)
+		{
+			angle -= 0.1;
+			cara.hide();
+			cara.pos2 = {(start.x + (int)(sin(angle) * scalee)), (start.y - (int)(cos(angle) * scalee))};
+			cara.draw();
+			wait_ms(150);
 		}
-		//--- ZMACKNUTI BUTTONU ---
+		if(!but2)
+		{
+			angle += 0.1;
+			cara.hide();
+			cara.pos2 = {(start.x + (int)(sin(angle) * scalee)), (start.y - (int)(cos(angle) * scalee))};
+			cara.draw();
+			wait_ms(150);
+		}
+		if(!but3)
+		{
+			balls.push_back(Circle(cara.pos2, 5, white, black));
+			angles.push_back(angle);
+			speeds.push_back(speed);
+			pc.printf("speed %f\r\n", speed);
+			speed = 1;
+			wait_ms(150);
+		}
+		if(!but4)
+		{
+			speed += 0.5;
+			pc.printf("speed %f\r\n", speed);
+			wait_ms(150);
+		}
 	}
 
 	return 0;

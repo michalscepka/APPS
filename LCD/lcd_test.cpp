@@ -564,8 +564,6 @@ Circle rec1({140, 3}, 5, white, black);
 
 void moveRect()
 {
-
-
 	if(!but2 && rec1.center.x < 280)
 	{
 		rec1.hide();
@@ -579,8 +577,6 @@ void moveRect()
 		rec1.center.x -= 1;
 		rec1.draw();
 	}
-
-
 }
 
 vector<Circle> balls;
