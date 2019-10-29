@@ -57,29 +57,27 @@ public:
 	{
 		switch (number)
 		{
-		case 0:
-			return 0b00000000;
-		case 1:
-			return 0b00000001;
-		case 2:
-			return 0b00000011;
-		case 3:
-			return 0b00000111;
-		case 4:
-			return 0b00001111;
-		case 5:
-			return 0b00011111;
-		case 6:
-			return 0b00111111;
-		case 7:
-			return 0b01111111;
-		case 8:
-			return 0b11111111;
-		}
+            case 0:
+                return 0b00000000;
+            case 1:
+                return 0b00000001;
+            case 2:
+                return 0b00000011;
+            case 3:
+                return 0b00000111;
+            case 4:
+                return 0b00001111;
+            case 5:
+                return 0b00011111;
+            case 6:
+                return 0b00111111;
+            case 7:
+                return 0b01111111;
+            case 8:
+                return 0b11111111;
+        }
 		return 0;
 	}
-
-
 };
 
 Expander expander;
@@ -211,11 +209,7 @@ public:
 			l_ack |= i2c_output(0b11111111);
 		i2c_stop();
 	}
-
 };
-
-unsigned char PS[8] =
-{ ' ' };
 
 int main(void)
 {
@@ -297,7 +291,6 @@ int main(void)
 
 	while (true)
 	{
-
 		//expander.startLeds(~v);
 		//expander.startLeds(rad.getRSSI());
 
@@ -326,13 +319,6 @@ int main(void)
 		{
 			rad.decreaseVolume();
 		}
-
-		/*for (int i = 0; i < 8; i++)
-		 {
-		 g_pc.printf("%c", PS[i]);
-		 }*/
-
 	}
-
 	return 0;
 }

@@ -37,49 +37,43 @@ DigitalIn g_but12(PTC12);
 class Expander
 {
 public:
-
 	void startLeds(uint8_t value)
 	{
 		uint8_t l_ack = 0;
-
 		i2c_start();
-
 		l_ack = i2c_output(0b01000000);
-
 		if (!l_ack)
 			l_ack |= i2c_output(value);
 		else
 			l_ack |= i2c_output(0b11111111);
-
-
 		i2c_stop();
 	}
 
-	uint8_t selectLeds(uint8_t number){
-			switch(number){
-			case 0:
-				return 0b00000000;
-			case 1:
-				return 0b00000001;
-			case 2:
-				return 0b00000011;
-			case 3:
-				return 0b00000111;
-			case 4:
-				return 0b00001111;
-			case 5:
-				return 0b00011111;
-			case 6:
-				return 0b00111111;
-			case 7:
-				return 0b01111111;
-			case 8:
-				return 0b11111111;
-			}
-			return 0;
+	uint8_t selectLeds(uint8_t number)
+    {
+        switch(number)
+        {
+            case 0:
+                return 0b00000000;
+            case 1:
+                return 0b00000001;
+            case 2:
+                return 0b00000011;
+            case 3:
+                return 0b00000111;
+            case 4:
+                return 0b00001111;
+            case 5:
+                return 0b00011111;
+            case 6:
+                return 0b00111111;
+            case 7:
+                return 0b01111111;
+            case 8:
+                return 0b11111111;
+        }
+        return 0;
 	}
-
-
 };
 
 Expander expander;
@@ -89,7 +83,8 @@ class Radio
 public:
 	uint8_t volume;
 
-	void seekStation(bool higher) {
+	void seekStation(bool higher)
+    {
 		uint8_t l_ack = 0;
 		i2c_start();
 		l_ack |= i2c_output(SI4735_ADDRESS | W);
@@ -102,7 +97,8 @@ public:
 		i2c_stop();
 	}
 
-	void setVolume(uint8_t vol){
+	void setVolume(uint8_t vol)
+    {
 		uint8_t l_ack = 0;
 		i2c_start();
 		l_ack |= i2c_output(SI4735_ADDRESS | W);
@@ -117,26 +113,24 @@ public:
 		ledsByVolume();
 	}
 
-	void decreaseVolume(){
+	void decreaseVolume()
+    {
 		if (volume > 0)
 			setVolume(volume - 1);
 	}
 
-	void increaseVolume(){
+	void increaseVolume()
+    {
 		if (volume < 63)
 			setVolume(volume + 1);
 	}
 
-
-	void ledsByVolume(){
+	void ledsByVolume()
+    {
 		uint8_t ledNumber= (volume + 1)/8;
 		expander.startLeds(expander.selectLeds(ledNumber));
 	}
-
-
 };
-
-unsigned char PS[8] = { ' ' };
 
 int main(void)
 {
@@ -213,107 +207,32 @@ int main(void)
 	i2c_nack();
 	i2c_stop();
 
-
 	Radio rad;
 	uint8_t v = 'M';
 
-	while(true){
+	while(true)
+    {
+        if(!g_but9)
+        {
+            rad.seekStation(true);
+            wait_ms(150);
+        }
 
-	//expander.startLeds(~v);
-	//expander.startLeds(rad.getRSSI());
+        if(!g_but10)
+        {
+            rad.seekStation(false);
+            wait_ms(150);
+        }
 
-		/*uint8_t l_ack = 0;
-		uint8_t rds0, rds1, rds2, rds3, b1hi, b1lo, b2hi, b2lo, b3hi, b3lo,
-				b4hi, b4lo, status;
-		i2c_start();
-		l_ack |= i2c_output( SI4735_ADDRESS | W);
-		l_ack |= i2c_output(0x24);
-		l_ack |= i2c_output(0b00000000);
-		i2c_start();
-		l_ack |= i2c_output( SI4735_ADDRESS | R);
-		//read data
-		rds0 = i2c_input();
-		i2c_ack();
-		rds1 = i2c_input();
-		i2c_ack();
-		rds2 = i2c_input();
-		i2c_ack();
-		rds3 = i2c_input();
-		i2c_ack();
-		b1hi = i2c_input();
-		i2c_ack();
-		b1lo = i2c_input();
-		i2c_ack();
-		b2hi = i2c_input();
-		i2c_ack();
-		b2lo = i2c_input();
-		i2c_ack();
-		b3hi = i2c_input();
-		i2c_ack();
-		b3lo = i2c_input();
-		i2c_ack();
-		b4hi = i2c_input();
-		i2c_ack();
-		b4lo = i2c_input();
-		i2c_ack();
-		status = i2c_input();
-		i2c_ack();
-		i2c_stop();
+        if(!g_but11)
+        {
+            rad.increaseVolume();
+        }
 
-		uint8_t result = b2hi & 0xF0 >> 4;
-		if (result == 0b0000)
-		{
-			uint8_t pomoc = b2lo & 0b00000011;
-			if (pomoc == 0)
-			{
-				PS[0] = b4hi;
-				PS[1] = b4lo;
-			}
-			if (pomoc == 1)
-			{
-				PS[2] = b4hi;
-				PS[3] = b4lo;
-			}
-			if (pomoc == 2)
-			{
-				PS[4] = b4hi;
-				PS[5] = b4lo;
-			}
-			if (pomoc == 3)
-			{
-				PS[6] = b4hi;
-				PS[7] = b4lo;
-			}
-		}*/
-
-	if(!g_but9){
-		rad.seekStation(true);
-
-		wait_ms(150);
-
+        if(!g_but12)
+        {
+            rad.decreaseVolume();
+        }
 	}
-
-	if(!g_but10){
-		rad.seekStation(false);
-
-		wait_ms(150);
-	}
-
-	if(!g_but11){
-		rad.increaseVolume();
-	}
-
-	if(!g_but12){
-		rad.decreaseVolume();
-	}
-
-	/*for (int i = 0; i < 8; i++)
-	{
-		g_pc.printf("%c", PS[i]);
-	}*/
-
-
-	}
-
 	return 0;
 }

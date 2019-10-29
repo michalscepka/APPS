@@ -60,7 +60,7 @@ public:
         i2c_start();
         ack |= i2c_output( SI4735_ADDRESS | W );
         ack |= i2c_output( 0x21 );          // FM_TUNE_FREQ
-        ack |= i2c_output( 0b00000000 );    // ARG1
+        ack |= i2c_output( 0b00001100 );    // ARG1
         i2c_stop();
         printf("Tuned freq : %d \\r\\n", get_freq());
     }
@@ -69,7 +69,7 @@ public:
         i2c_start();
         ack |= i2c_output( SI4735_ADDRESS  | W );
         ack |= i2c_output( 0x21 );          // FM_TUNE_FREQ
-        ack |= i2c_output( 0b00001000 );    // ARG1
+        ack |= i2c_output( 0b00000100 );    // ARG1
         i2c_stop();
         printf("Tuned freq : %d \\r\\n", get_freq());
     }
