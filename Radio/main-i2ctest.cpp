@@ -24,8 +24,8 @@
 
 #define SeekUP 0b00001100
 #define SeekDown 0b00000100
-#define HWADR_PCF8574  0b01001110
-#define A012  0b1110
+#define HWADR_PCF8574  0b01000000
+#define A012  0b0000
 
 Serial pc( USBTX, USBRX );
 
@@ -82,22 +82,21 @@ public:
 	//RADIO
     void seek(bool up)
     {
-        uint8_t ack = 0;
-        i2c_start();
-        ack |= i2c_output(SI4735_ADDRESS | W);
-        ack |= i2c_output(0x21);          // FM_TUNE_FREQ
+    	uint8_t ack = 0;
+		i2c_start();
+		ack |= i2c_output(SI4735_ADDRESS | W);
+		ack |= i2c_output(0x21);          // FM_TUNE_FREQ
 		if(up)
-        	ack |= i2c_output(SeekUP);    // ARG1
+			ack |= i2c_output(SeekUP);    // ARG1
 		else
 			ack |= i2c_output(SeekDown);  // ARG1
-        i2c_stop();
+		i2c_stop();
 
 		//RSSI
 		uint8_t S1, S2, RSSI, SNR, MULT, CAP;
-        uint8_t ack = 0;
 		int freq;
 
-        i2c_start();
+		i2c_start();
 		ack |= i2c_output(SI4735_ADDRESS | W);
 		ack |= i2c_output(0x22);          // FM_TUNE_STATUS
 		ack |= i2c_output(0x00);          // ARG1
@@ -140,16 +139,19 @@ public:
         ack |= i2c_output(vol);
         i2c_stop();
 		volume = vol;
+		leds_bar_by_volume();
     }
 
-	void volume_up(bool up)
+	void volume_up()
 	{
-		if(up)
-			if (volume > 0)
-				setVolume(volume - 1);
-		else
-			if (volume < 63)
-				setVolume(volume + 1);
+		if (volume < 63)
+			set_volume(volume + 1);
+	}
+
+	void volume_down()
+	{
+		if (volume > 0)
+			set_volume(volume - 1);
 	}
 
 	void leds_bar_by_volume()
@@ -224,6 +226,7 @@ public:
 
 	void qualityOfSignal()
 	{
+		uint8_t l_ack = 0;
 		uint8_t S1,S2,STBL,RSSI,SNR,MULT,FREQ;
 		i2c_start(); // Opakovany start - zjisteni RSSI
 		l_ack |= i2c_output ( SI4735_ADDRESS | W );
@@ -345,11 +348,12 @@ int main( void )
 
 	//-----START-----
 
-	uint8_t b = 'S';
+	uint8_t b = 0b00000000;
     b = ((b * 0x0802LU & 0x22110LU) | (b * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16;
 
     Radio r1;
     r1.leds_bar(b);
+    r1.set_volume(30);
 
     while(1)
     {
@@ -358,7 +362,7 @@ int main( void )
     		r1.seek(true);
     		wait_ms(150);
 			r1.leds_bar(r1.selectLedsByFreq(r1.get_freq()));
-			printf("Tuned freq : %d \r\n", get_freq());
+			printf("Tuned freq : %d \r\n", r1.get_freq());
     	}
 
     	if(!but2)
@@ -366,17 +370,17 @@ int main( void )
     		r1.seek(false);
 			wait_ms(150);
 			r1.leds_bar(r1.selectLedsByFreq(r1.get_freq()));
-			printf("Tuned freq : %d \r\n", get_freq());
+			printf("Tuned freq : %d \r\n", r1.get_freq());
 		}
 
 		if(!but3)
 		{
-			r1.volume(true);
+			r1.volume_up();
 		}
 
 		if(!but4)
 		{
-			r1.volume(false);
+			r1.volume_down();
 		}
 
 		//r1.qualityOfSignal();
