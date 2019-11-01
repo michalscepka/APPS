@@ -34,6 +34,9 @@ DigitalIn but2(PTC10);
 DigitalIn but3(PTC11);
 DigitalIn but4(PTC12);
 
+DigitalOut led1(PTA1);
+DigitalOut led2(PTA2);
+
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 
 class Radio
@@ -123,7 +126,7 @@ public:
 		i2c_nack();
 		i2c_stop();
 
-		leds_bar(RSSI);		//zobrazeni sily signalu pri seeku
+		//leds_bar(RSSI);		//zobrazeni sily signalu pri seeku
     }
 
     void set_volume(uint8_t vol)
@@ -207,19 +210,19 @@ public:
 			case 1:
 				return 0b00000001;
 			case 2:
-				return 0b00000010;
+				return 0b00000011;
 			case 3:
-				return 0b00000100;
+				return 0b00000111;
 			case 4:
-				return 0b00001000;
+				return 0b00001111;
 			case 5:
-				return 0b00010000;
+				return 0b00011111;
 			case 6:
-				return 0b00100000;
+				return 0b00111111;
 			case 7:
-				return 0b01000000;
+				return 0b01111111;
 			case 8:
-				return 0b10000000;
+				return 0b11111111;
 		}
 		return 0;
 	}
@@ -254,7 +257,60 @@ public:
 
 		leds_bar(RSSI); // zobrazeni sily pri seeku
 	}
+
+	uint8_t is_freq_valid()
+	{
+		int frequency;
+		uint8_t valid;
+		uint8_t l_ack = 0;
+		uint8_t l_S1, l_S2, l_RSSI, l_SNR, l_MULT, l_CAP;
+		i2c_start();
+		l_ack |= i2c_output( SI4735_ADDRESS | W);
+		l_ack |= i2c_output(0x22);			// FM_TUNE_STATUS
+		l_ack |= i2c_output(0x00);			// ARG1
+		// repeated start
+		i2c_start();
+		// change direction of communication
+		l_ack |= i2c_output( SI4735_ADDRESS | R);
+		// read data
+		l_S1 = i2c_input();
+		i2c_ack();
+		l_S2 = i2c_input();
+		i2c_ack();
+		frequency = (int) i2c_input() << 8;
+		i2c_ack();
+		frequency |= i2c_input();
+		i2c_ack();
+		l_RSSI = i2c_input();
+		i2c_ack();
+		l_SNR = i2c_input();
+		i2c_ack();
+		l_MULT = i2c_input();
+		i2c_ack();
+		l_CAP = i2c_input();
+		i2c_nack();
+		i2c_stop();
+
+		valid = l_S2 & 0b00000001;
+		return valid;
+	}
+
+	void set_freq(int frequency)
+	{
+		uint8_t l_ack = 0;
+		i2c_start();
+		l_ack |= i2c_output( SI4735_ADDRESS | W);
+		l_ack |= i2c_output(0x20);			// FM_TUNE_FREQ
+		l_ack |= i2c_output(0x00);			// ARG1
+		l_ack |= i2c_output(frequency >> 8);	// ARG2 - FreqHi
+		l_ack |= i2c_output(frequency & 0xff);	// ARG3 - FreqLo
+		l_ack |= i2c_output(0x00);			// ARG4
+		i2c_stop();
+	}
+
 };
+
+int frekvence[4];
 
 int main( void )
 {
@@ -295,7 +351,8 @@ int main( void )
 	pc.printf("\nTunig of radio station...\r\n");
 
     // Required frequency in MHz * 100
-	int l_freq = 10140; // Radiozurnal
+	//int l_freq = 10140; // Radiozurnal
+	int l_freq = 6800;
 
 	// Tuning of radio station
 	i2c_start();
@@ -355,17 +412,66 @@ int main( void )
     r1.leds_bar(b);
     r1.set_volume(30);
 
+    uint8_t rds0, rds1, rds2, rds3, b1hi, b1lo, b2hi, b2lo, b3hi, b3lo, b4hi, b4lo, status;
+
+    unsigned char PS[8] =
+	{ 'X' };
+
     while(1)
     {
     	if(!but1)
     	{
-    		r1.seek(true);
+    		/*r1.seek(true);
     		wait_ms(150);
 			r1.leds_bar(r1.selectLedsByFreq(r1.get_freq()));
-			printf("Tuned freq : %d \r\n", r1.get_freq());
+			printf("Tuned freq : %d \r\n", r1.get_freq());*/
+    		int i = 0;
+			int nejvyssiFrek = 0;
+			while (r1.get_freq() > nejvyssiFrek)
+			{
+				if (r1.get_freq() > nejvyssiFrek)
+				{
+					nejvyssiFrek = r1.get_freq();
+				}
+				if (i < 4 && r1.is_freq_valid())
+				{
+					frekvence[i] = r1.get_freq();
+					i++;
+				}
+				r1.leds_bar(r1.selectLedsByFreq(r1.get_freq()));
+				printf("Tuned freq : %d \r\n", r1.get_freq());
+				r1.seek(true);
+				wait_ms(400);
+			}
     	}
 
-    	if(!but2)
+    	/*for(int i = 0; i < 4; i++)
+    	{
+    		printf("freq : %d \r\n", frekvence[i]);
+    	}*/
+
+    	if (!but3 & but2)
+		{
+			r1.set_freq(frekvence[1]);
+			printf("Tuned freq : %d \r\n", r1.get_freq());
+		}
+		if (!but4 & but2)
+		{
+			r1.set_freq(frekvence[2]);
+			printf("Tuned freq : %d \r\n", r1.get_freq());
+		}
+		if (!but3 & !but2)
+		{
+			r1.set_freq(frekvence[3]);
+			printf("Tuned freq : %d \r\n", r1.get_freq());
+		}
+		if (!but4 & !but2)
+		{
+			r1.set_freq(frekvence[4]);
+			printf("Tuned freq : %d \r\n", r1.get_freq());
+		}
+
+    	/*if(!but2)
 		{
     		r1.seek(false);
 			wait_ms(150);
@@ -381,9 +487,112 @@ int main( void )
 		if(!but4)
 		{
 			r1.volume_down();
-		}
+		}*/
 
 		//r1.qualityOfSignal();
+
+		i2c_start();
+		l_ack |= i2c_output( SI4735_ADDRESS | W);
+		l_ack |= i2c_output(0x24);
+		l_ack |= i2c_output(0b00000000);
+		i2c_start();
+		l_ack |= i2c_output( SI4735_ADDRESS | R);
+		//read data
+		rds0 = i2c_input();
+		i2c_ack();
+		rds1 = i2c_input();
+		i2c_ack();
+		rds2 = i2c_input();
+		i2c_ack();
+		rds3 = i2c_input();
+		i2c_ack();
+		b1hi = i2c_input();
+		i2c_ack();
+		b1lo = i2c_input();
+		i2c_ack();
+		b2hi = i2c_input();
+		i2c_ack();
+		b2lo = i2c_input();
+		i2c_ack();
+		b3hi = i2c_input();
+		i2c_ack();
+		b3lo = i2c_input();
+		i2c_ack();
+		b4hi = i2c_input();
+		i2c_ack();
+		b4lo = i2c_input();
+		i2c_ack();
+		status = i2c_input();
+		i2c_ack();
+		i2c_stop();
+
+		uint8_t help = rds2 & 0b00000001;
+		if (help == 0b00000001)
+		{
+			uint8_t help2 = status & 0b00110011;
+			if (help2 == 0b00000000)
+			{
+
+				uint8_t result = b2hi & 0b11110000;
+				if (result == 0b00000000)
+				{
+					uint8_t indexy = b2lo & 0b00000011;
+					if ((int) indexy == 0)
+					{
+						PS[0] = b4hi;
+						PS[1] = b4lo;
+						led1 = 0;
+						led2 = 0;
+					}
+					if ((int) indexy == 1)
+					{
+						PS[2] = b4hi;
+						PS[3] = b4lo;
+						led1 = 0;
+						led2 = 1;
+					}
+					if ((int) indexy == 2)
+					{
+						PS[4] = b4hi;
+						PS[5] = b4lo;
+						led1 = 1;
+						led2 = 0;
+					}
+					if ((int) indexy == 3)
+					{
+						PS[6] = b4hi;
+						PS[7] = b4lo;
+						led1 = 1;
+						led2 = 1;
+					}
+				}
+
+				for (int i = 0; i < 8; i++)
+				{
+					pc.printf("%c", PS[i]);
+				}
+				pc.printf("\r\n");
+			}
+		}
     }
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
