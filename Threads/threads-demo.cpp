@@ -27,6 +27,8 @@ public:
 	TYPE max = 0;           // result
 	TYPE* result;   	    // result*
 
+    task_part() {}
+
 	task_part(int myid, int first, int last, TYPE* ptr)
 	{
 		this->id = myid;
@@ -210,50 +212,51 @@ int main(int na, char **arg)
     printArray(pole, N);
 
     printf("\nSort using 4 threads...\n");
-    pthread_t pt1, pt2, pt3, pt4;
-    task_part tp1(1, 0, N / 4, pole);
-    task_part tp2(2, N / 4, (N / 4) * 2, pole);
-    task_part tp3(3, (N / 4) * 2, (N / 4) * 3, pole);
-    task_part tp4(4, (N / 4) * 3, (N / 4) * 4, pole);
+
+    pthread_t thread1, thread2, thread3, thread4;
+    task_part part1(1, 0, N / 2, pole);
+    task_part part2(2, N / 2, (N / 2) * 2, pole);
+    task_part part3(3, (N / 4) * 2, (N / 4) * 3, pole);
+    task_part part4(4, (N / 4) * 3, (N / 4) * 4, pole);
     timeval time_before, time_after;
 
     // Time recording before searching
     gettimeofday(&time_before, NULL);
 
     // Threads starting
-    pthread_create(&pt1, NULL, my_thread, &tp1);
-    pthread_create(&pt2, NULL, my_thread, &tp2);
-    pthread_create(&pt3, NULL, my_thread, &tp3);
-    pthread_create(&pt4, NULL, my_thread, &tp4);
+    pthread_create(&thread1, NULL, my_thread, &part1);
+    pthread_create(&thread2, NULL, my_thread, &part2);
+    pthread_create(&thread3, NULL, my_thread, &part3);
+    pthread_create(&thread4, NULL, my_thread, &part4);
 
     // Waiting for threads completion
-    pthread_join(pt1, NULL);
-    pthread_join(pt2, NULL);
-    pthread_join(pt3, NULL);
-    pthread_join(pt4, NULL);
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+    pthread_join(thread3, NULL);
+    pthread_join(thread4, NULL);
 
     // Time recording after searching
     gettimeofday(&time_after, NULL);
 
-    TYPE* sorted1 = mergeArrays(tp1.result, tp2.result, tp1.N, tp2.N);
-    TYPE* sorted2 = mergeArrays(tp3.result, tp4.result, tp3.N, tp4.N);
-    pole = mergeArrays(sorted1, sorted2, tp1.N + tp2.N, tp3.N + tp4.N);
+    TYPE* sorted1 = mergeArrays(part1.result, part2.result, part1.N, part2.N);
+    TYPE* sorted2 = mergeArrays(part3.result, part4.result, part3.N, part4.N);
+    pole = mergeArrays(sorted1, sorted2, part1.N + part2.N, part3.N + part4.N);
     printf("Result:\n");
     printArray(pole, N);
     printf("The search time: %d [ms]\n", timeval_to_ms(&time_before, &time_after));
 
     /*printf("\nMaximum number search using two threads...\n");
     pthread_t pt1, pt2;
-    task_part tp1(1, 0, N / 2, pole);
-    task_part tp2(2, N / 2, N, pole);
+    task_part part1(1, 0, N / 2, pole);
+    task_part part2(2, N / 2, N, pole);
     timeval time_before, time_after;
 
     // Time recording before searching
     gettimeofday(&time_before, NULL);
 
     // Threads starting
-    pthread_create(&pt1, NULL, my_thread, &tp1);
-    pthread_create(&pt2, NULL, my_thread, &tp2);
+    pthread_create(&pt1, NULL, my_thread, &part1);
+    pthread_create(&pt2, NULL, my_thread, &part2);
 
     // Waiting for threads completion 
     pthread_join(pt1, NULL);
@@ -262,7 +265,7 @@ int main(int na, char **arg)
     // Time recording after searching
     gettimeofday(&time_after, NULL);
 
-    printf("The found maximum: %d\n", MAX(tp1.get_max(), tp2.get_max()));
+    printf("The found maximum: %d\n", MAX(part1.get_max(), part2.get_max()));
     printf("The search time: %d [ms]\n", timeval_to_ms(&time_before, &time_after));
 
     printf("\nMaximum number search using one thread...\n");
