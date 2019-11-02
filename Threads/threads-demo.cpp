@@ -214,8 +214,8 @@ int main(int na, char **arg)
     printf("\nSort using 4 threads...\n");
 
     pthread_t thread1, thread2, thread3, thread4;
-    task_part part1(1, 0, N / 2, pole);
-    task_part part2(2, N / 2, (N / 2) * 2, pole);
+    task_part part1(1, 0, N / 4, pole);
+    task_part part2(2, N / 4, (N / 4) * 2, pole);
     task_part part3(3, (N / 4) * 2, (N / 4) * 3, pole);
     task_part part4(4, (N / 4) * 3, (N / 4) * 4, pole);
     timeval time_before, time_after;
