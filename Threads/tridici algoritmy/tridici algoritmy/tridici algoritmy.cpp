@@ -17,8 +17,8 @@ public:
 	task_part(int myid, int first, int last, TYPE* ptr)
 	{
 		this->id = myid;
-	    this->first = first;
-        this->last = last;
+		this->first = first;
+		this->last = last;
 		this->data = ptr;
 		this->N = last - first;
 		this->result = fillArray();
@@ -83,7 +83,7 @@ public:
 		return result;
 	}
 
-    TYPE* insertionSort()
+	TYPE* insertionSort()
 	{
 		for (int i = 0; i < N - 1; i++)
 		{
