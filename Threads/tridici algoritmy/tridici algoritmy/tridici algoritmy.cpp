@@ -208,7 +208,6 @@ int main(void)
 {
 	const int N = 1000000;
 	TYPE* pole = new TYPE[N];
-	//TYPE pole[N] = { 9.2, 4.5, 4.2, 2.3, 0.1, 0.002, 9.9, 2.31, 15.3, 11.12 };
 
 	srand((unsigned int)time(nullptr));
 
