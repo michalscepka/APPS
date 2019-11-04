@@ -15,8 +15,11 @@
 #include <sys/time.h>
 #include <sys/param.h>
 #include <pthread.h>
+#include <vector>
 
 #define TYPE int
+
+bool vypis = 0;
 
 class task_part
 {
@@ -118,11 +121,14 @@ public:
 //vypise pole
 void printArray(TYPE* pole, int N)
 {
-    for (int i = 0; i < N; i++)
+    if(vypis)
     {
-        printf("%d\t", pole[i]);
+        for (int i = 0; i < N; i++)
+        {
+            printf("%d\t", pole[i]);
+        }
+        printf("\n");
     }
-    printf("\n");
 }
 
 //spoji setrizena dve pole do tretiho
@@ -146,18 +152,18 @@ TYPE* mergeArrays(TYPE* arr1, TYPE* arr2, int N1, int N2)
 // Thread will search the largest element in array 
 // from element arg->from with length of arg->length.
 // Result will be stored to arg->max.
-void *my_thread( void *void_arg )
+void *sort( void *void_arg )
 {
     task_part *ptr_task = (task_part*)void_arg;
-    printf("Thread %d started from %d to %d...\n", ptr_task->id, ptr_task->first, ptr_task->last);
+    //printf("Thread %d started from %d to %d...\n", ptr_task->id, ptr_task->first, ptr_task->last);
 
     //ptr_task->max = ptr_task->search_max();
     //ptr_task->result = ptr_task->bubbleSort();
-    ptr_task->result = ptr_task->selectionSort();
-    //ptr_task->result = ptr_task->insertionSort();
+    //ptr_task->result = ptr_task->selectionSort();
+    ptr_task->result = ptr_task->insertionSort();
 
     //printf("Found maximum in thread %d is %d\n", ptr_task->id, ptr_task->max);
-    printf("\nSorted in thread %d:\n", ptr_task->id);
+    //printf("\nSorted in thread %d:\n", ptr_task->id);
     printArray(ptr_task->result, ptr_task->N);
 
     return NULL;
@@ -209,75 +215,55 @@ int main(int na, char **arg)
             fflush(stdout);
         }
     }
+    printf("\n");
     printArray(pole, N);
 
-    printf("\nSort using 4 threads...\n");
+    //vytvoreni threadu a task_partu
+    int th_count = 1500;
+    pthread_t threads[th_count];
+    std::vector<task_part> parts;
+    for (int i = 0; i < th_count; ++i)
+    {
+        parts.push_back(task_part(i + 1, i * (N / th_count), (i + 1) * (N / th_count), pole));
+    }
+    printf("\nSort using %d threads...\n", th_count);
 
-    pthread_t thread1, thread2, thread3, thread4;
-    task_part part1(1, 0, N / 4, pole);
-    task_part part2(2, N / 4, (N / 4) * 2, pole);
-    task_part part3(3, (N / 4) * 2, (N / 4) * 3, pole);
-    task_part part4(4, (N / 4) * 3, (N / 4) * 4, pole);
     timeval time_before, time_after;
 
     // Time recording before searching
     gettimeofday(&time_before, NULL);
 
     // Threads starting
-    pthread_create(&thread1, NULL, my_thread, &part1);
-    pthread_create(&thread2, NULL, my_thread, &part2);
-    pthread_create(&thread3, NULL, my_thread, &part3);
-    pthread_create(&thread4, NULL, my_thread, &part4);
+    for (int i = 0; i < th_count; ++i)
+    {
+        pthread_create(&threads[i], NULL, sort, &parts[i]);
+    }
 
     // Waiting for threads completion
-    pthread_join(thread1, NULL);
-    pthread_join(thread2, NULL);
-    pthread_join(thread3, NULL);
-    pthread_join(thread4, NULL);
+    for (int i = 0; i < th_count; ++i)
+    {
+        pthread_join(threads[i], NULL);
+    }
 
     // Time recording after searching
     gettimeofday(&time_after, NULL);
 
-    TYPE* sorted1 = mergeArrays(part1.result, part2.result, part1.N, part2.N);
-    TYPE* sorted2 = mergeArrays(part3.result, part4.result, part3.N, part4.N);
-    pole = mergeArrays(sorted1, sorted2, part1.N + part2.N, part3.N + part4.N);
+    //merge
     printf("Result:\n");
+    pole = nullptr;
+    for(int i = 0; i < th_count - 1; i++)
+    {
+        if(pole == nullptr)
+        {
+            pole = mergeArrays(parts[i].result, parts[i + 1].result, parts[i].N, parts[i + 1].N);
+            N = parts[i].N + parts[i].N;
+        }
+        else
+        {
+            pole = mergeArrays(pole, parts[i + 1].result, N, parts[i + 1].N);
+            N += parts[i + 1].N;
+        }
+    }
     printArray(pole, N);
     printf("The search time: %d [ms]\n", timeval_to_ms(&time_before, &time_after));
-
-    /*printf("\nMaximum number search using two threads...\n");
-    pthread_t pt1, pt2;
-    task_part part1(1, 0, N / 2, pole);
-    task_part part2(2, N / 2, N, pole);
-    timeval time_before, time_after;
-
-    // Time recording before searching
-    gettimeofday(&time_before, NULL);
-
-    // Threads starting
-    pthread_create(&pt1, NULL, my_thread, &part1);
-    pthread_create(&pt2, NULL, my_thread, &part2);
-
-    // Waiting for threads completion 
-    pthread_join(pt1, NULL);
-    pthread_join(pt2, NULL);
-
-    // Time recording after searching
-    gettimeofday(&time_after, NULL);
-
-    printf("The found maximum: %d\n", MAX(part1.get_max(), part2.get_max()));
-    printf("The search time: %d [ms]\n", timeval_to_ms(&time_before, &time_after));
-
-    printf("\nMaximum number search using one thread...\n");
-
-    gettimeofday(&time_before, NULL);
-
-    // Searching in single thread
-    task_part single(333, 0, N, pole);
-    TYPE res = single.search_max();
-
-    gettimeofday(&time_after, NULL);
-
-    printf("The found maximum: %d\n", res);
-    printf("The search time: %d [ms]\n", timeval_to_ms(&time_before, &time_after));*/
 }
