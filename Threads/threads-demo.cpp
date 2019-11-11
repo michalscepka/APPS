@@ -112,28 +112,26 @@ void printArray(TYPE* pole, int pole_start, int pole_stop)
     }
 }
 
-                                                                                                    //PREDAT JESTE ODKUD KAM SE TO BUDE SORTIT V NOVEM POLI
-void mergeArrays(TYPE* arr1, int arr1_start, int arr1_stop, TYPE* arr2, int arr2_start, int arr2_stop, TYPE* pole2)
+void mergeArrays(TYPE* data, TYPE* result, int first1, int last1, int first2, int last2)
 {
-    int i = arr1_start, j = arr2_start, k = 0;
+    int i = first1, j = first2, k = first1;
 
-    while (i < arr1_stop && j < arr2_stop)
+    while (i < last1 && j < last2)
     {
-    	if (arr1[i] < arr2[j])
-			pole2[k++] = arr1[i++];
+    	if (data[i] < data[j])
+			result[k++] = data[i++];
 		else
-			pole2[k++] = arr2[j++];
+			result[k++] = data[j++];
     }
 
-    while (i < arr1_stop)
-    	pole2[k++] = arr1[i++];
+    while (i < last1)
+    	result[k++] = data[i++];
 
-    while (j < arr2_stop)
-    	pole2[k++] = arr2[j++];
+    while (j < last2)
+    	result[k++] = data[j++];
 }
 
 // Thread will sort array from element arg->first to arg->last.
-// Result will be stored to arg->result*.
 void *thread_sort(void *void_arg)
 {
     task_part *ptr_task = (task_part*)void_arg;
@@ -189,16 +187,46 @@ int main(int na, char** arg)
     int th_count = 2;
     if(na == 3)
         th_count = atoi(arg[2]);
+
         
-    /*pthread_t threads[th_count];
+    pthread_t threads[th_count];
     std::vector<task_part> parts;
-    for (int i = 0; i < th_count; ++i)
+    for (int i = 0; i < th_count; i++)
     {
         parts.push_back(task_part(i + 1, i * (N / th_count), (i + 1) * (N / th_count), pole));
     }
-    printf("\nUsing %d threads...\n", th_count);*/
+    printf("\nUsing %d threads...\n", th_count);
 
-    pthread_t thread1, thread2;
+    timeval time_before, time_after, time_all_start, time_all_stop;
+    gettimeofday(&time_all_start, NULL);
+    gettimeofday(&time_before, NULL);
+
+    printf("\nSorting started...\n");
+    for (int i = 0; i < th_count; i++)
+    {
+        pthread_create(&threads[i], NULL, thread_sort, &parts[i]);
+    }
+    for (int i = 0; i < th_count; ++i)
+    {
+        pthread_join(threads[i], NULL);
+    }
+    
+    gettimeofday(&time_after, NULL);
+    printf("The sorting time: %d [ms]\n", timeval_to_ms(&time_before, &time_after));
+
+    TYPE *pole2 = new TYPE[N];
+    printArray(pole, 0, N);
+    for(int i = 0; i <= th_count / 2; i += 2)
+    {
+    	mergeArrays(pole, pole2, parts[i].first, parts[i].last, parts[i + 1].first, parts[i + 1].last);
+    }
+    printArray(pole2, 0, N);
+    mergeArrays(pole2, pole, parts[0].first, parts[1].last, parts[2].first, parts[3].last);
+    printArray(pole, 0, N);
+
+
+
+    /*pthread_t thread1, thread2;
     task_part part1(1, 0, N / 2, pole);
     task_part part2(2, N / 2, N, pole);
 
@@ -221,24 +249,8 @@ int main(int na, char** arg)
     printArray(pole, 0, N);
 
     TYPE *pole2 = new TYPE[N];
-    mergeArrays(part1.data, part1.first, part1.last, part2.data, part2.first, part2.last, pole2);
-    printArray(pole2, 0, N);
-
-    /*//FILLING
-    // Time recording before filling
-    gettimeofday(&time_before, NULL);
-    printf("\nRandom numbers generating started...\n");
-    for (int i = 0; i < th_count; ++i)
-    {
-        pthread_create(&threads[i], NULL, thread_fill, &parts[i]);
-    }
-    for (int i = 0; i < th_count; ++i)
-    {
-        pthread_join(threads[i], NULL);
-    }
-    // Time recording after filling
-    gettimeofday(&time_after, NULL);
-    printf("The filling time: %d [ms]\n", timeval_to_ms(&time_before, &time_after));*/
+    mergeArrays(part1, part2, pole, pole2);
+    printArray(pole2, 0, N);*/
 
     /*//SORTING
     // Time recording before sorting
