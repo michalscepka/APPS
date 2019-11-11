@@ -18,20 +18,17 @@
 #include <vector>
 
 #define LENGTH_LIMIT 10000000
+//#define TYPE __uint32_t
 #define TYPE int
 
-bool vypis = 0;
+bool vypis = 1;
 
 class task_part
 {
 public:
     int id;                 // user identification
-    int first, last, N;     // data range
+    int first, last;     	// data range
     TYPE* data;             // array
-    TYPE max = 0;           // result
-    TYPE* result;   	    // result*
-
-    task_part() {}
 
     task_part(int myid, int first, int last, TYPE* ptr)
     {
@@ -39,92 +36,75 @@ public:
         this->first = first;
         this->last = last;
         this->data = ptr;
-        this->N = last - first;
-        this->result = nullptr;
     }
 
-    TYPE get_max() { return max; }
-
-    TYPE* get_result() { return result; }
-
-    // function search_max search the largest number in part of array
-    // from the left (included) up to the right element
-    TYPE search_max()
+    void bubbleSort()
     {
-        TYPE max_elem = data[first];
-        for (int i = first; i < last; i++)
-            if (max_elem < data[i])
-                max_elem = data[i];
-        return max_elem;
-    }
-
-    TYPE* fillArray()
-    {
-        TYPE* result = new TYPE[N];
-        for (int i = 0; i < N; i++)
+        for (int i = first; i < last - 1; i++)
         {
-            result[i] = rand() % (100);
-        }
-        return result;
-    }
-
-    TYPE* bubbleSort()
-    {
-        for (int i = 0; i < N - 1; i++)
-        {
-            for (int j = 0; j < N - i - 1; j++)
+            for (int j = first; j < last - 1; j++)
             {
-                if (result[j + 1] < result[j])
+                if (data[j + 1] < data[j])
                 {
-                    TYPE tmp = result[j + 1];
-                    result[j + 1] = result[j];
-                    result[j] = tmp;
+                    TYPE tmp = data[j + 1];
+                    data[j + 1] = data[j];
+                    data[j] = tmp;
                 }
             }
         }
-        return result;
     }
 
-    TYPE* selectionSort()
+    void selectionSort()
     {
-        for (int i = 0; i < N - 1; i++)
+        for (int i = first; i < last - 1; i++)
         {
             int minIndex = i;
-            for (int j = i + 1; j < N; j++)
+            for (int j = i + 1; j < last; j++)
             {
-                if (result[minIndex] > result[j])
+                if (data[minIndex] > data[j])
                     minIndex = j;
             }
-            TYPE tmp = result[i];
-            result[i] = result[minIndex];
-            result[minIndex] = tmp;
+            TYPE tmp = data[i];
+            data[i] = data[minIndex];
+            data[minIndex] = tmp;
         }
-        return result;
     }
 
-    TYPE* insertionSort()
+    void insertionSort()
     {
-        for (int i = 0; i < N - 1; i++)
+        for (int i = first; i < last - 1; i++)
         {
             int j = i + 1;
-            TYPE tmp = result[j];
-            while (j > 0 && tmp < result[j - 1])
+            TYPE tmp = data[j];
+            while (j - first > 0 && tmp < data[j - 1])
             {
-                result[j] = result[j - 1];
+            	data[j] = data[j - 1];
                 j--;
             }
-            result[j] = tmp;
+            data[j] = tmp;
         }
-        return result;
+    }
+
+    //zkontroluje ze je pole setrizene
+    bool check()
+    {
+        for(int i = first; i < last - 1; i++)
+        {
+            if(data[i] > data[i + 1])
+            {
+                return false;
+            }
+        }
+        return true;
     }
 };
 
 //vypise pole
-void printArray(TYPE* pole, int N)
+void printArray(TYPE* pole, int pole_start, int pole_stop)
 {
     if(vypis)
     {
-        for (int i = 0; i < N; i++)
+        for (int i = pole_start; i < pole_stop; i++)
         {
             printf("%d\t", pole[i]);
         }
@@ -132,37 +112,24 @@ void printArray(TYPE* pole, int N)
     }
 }
 
-//spoji setrizena dve pole do tretiho
-TYPE* mergeArrays(TYPE* arr1, TYPE* arr2, int N1, int N2)
+                                                                                                    //PREDAT JESTE ODKUD KAM SE TO BUDE SORTIT V NOVEM POLI
+void mergeArrays(TYPE* arr1, int arr1_start, int arr1_stop, TYPE* arr2, int arr2_start, int arr2_stop, TYPE* pole2)
 {
-    TYPE* answer = new int[N1 + N2];
-    int i = 0, j = 0, k = 0;
+    int i = arr1_start, j = arr2_start, k = 0;
 
-    while (i < N1 && j < N2)
-        answer[k++] = arr1[i] < arr2[j] ? arr1[i++] : arr2[j++];
+    while (i < arr1_stop && j < arr2_stop)
+    {
+    	if (arr1[i] < arr2[j])
+			pole2[k++] = arr1[i++];
+		else
+			pole2[k++] = arr2[j++];
+    }
 
-    while (i < N1)
-        answer[k++] = arr1[i++];
+    while (i < arr1_stop)
+    	pole2[k++] = arr1[i++];
 
-    while (j < N2)
-        answer[k++] = arr2[j++];
-
-    return answer;
-}
-
-// Thread will fill array from element arg->first to arg->last.
-// Result will be stored to arg->result*.
-void *thread_fill(void *void_arg)
-{
-    task_part *ptr_task = (task_part*)void_arg;
-    //printf("Thread %d filling started from %d to %d...\n", ptr_task->id, ptr_task->first, ptr_task->last);
-
-    ptr_task->result = ptr_task->fillArray();
-
-    //printf("Filled in thread %d:\n", ptr_task->id);
-    printArray(ptr_task->result, ptr_task->N);
-
-    return NULL;
+    while (j < arr2_stop)
+    	pole2[k++] = arr2[j++];
 }
 
 // Thread will sort array from element arg->first to arg->last.
@@ -172,13 +139,13 @@ void *thread_sort(void *void_arg)
     task_part *ptr_task = (task_part*)void_arg;
     //printf("Thread %d sorting started from %d to %d...\n", ptr_task->id, ptr_task->first, ptr_task->last);
 
-    //ptr_task->result = ptr_task->bubbleSort();
-    //ptr_task->result = ptr_task->selectionSort();
-    ptr_task->result = ptr_task->insertionSort();
+    //ptr_task->bubbleSort();
+    ptr_task->selectionSort();
+    //ptr_task->insertionSort();
 
     //printf("Sorted in thread %d:\n", ptr_task->id);
-    printArray(ptr_task->result, ptr_task->N);
-
+    printArray(ptr_task->data, ptr_task->first, ptr_task->last);
+    
     return NULL;
 }
 
@@ -202,6 +169,7 @@ int main(int na, char** arg)
 
     // array allocation
     TYPE *pole = new TYPE[N];
+
     if (!pole)
     {
         printf("Not enought memory for array!\n");
@@ -211,24 +179,52 @@ int main(int na, char** arg)
     // Initialization of random number generator
     srand((int)time(NULL));
 
+    for (int i = 0; i < N; i++)
+    {
+        pole[i] = rand() % (100);
+    }
+    printArray(pole, 0, N);
+
     //vytvoreni threadu a task_partu
     int th_count = 2;
     if(na == 3)
         th_count = atoi(arg[2]);
         
-    pthread_t threads[th_count];
+    /*pthread_t threads[th_count];
     std::vector<task_part> parts;
     for (int i = 0; i < th_count; ++i)
     {
         parts.push_back(task_part(i + 1, i * (N / th_count), (i + 1) * (N / th_count), pole));
     }
-    printf("\nUsing %d threads...\n", th_count);
+    printf("\nUsing %d threads...\n", th_count);*/
+
+    pthread_t thread1, thread2;
+    task_part part1(1, 0, N / 2, pole);
+    task_part part2(2, N / 2, N, pole);
 
     timeval time_before, time_after, time_all_start, time_all_stop;
 
     gettimeofday(&time_all_start, NULL);
 
-    //FILLING
+    printf("Sorting started...\n");
+    pthread_create(&thread1, NULL, thread_sort, &part1);
+    pthread_create(&thread2, NULL, thread_sort, &part2);
+
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+
+    if(part1.check() && part2.check())
+    {
+    	printf("sorted\n");
+    }
+
+    printArray(pole, 0, N);
+
+    TYPE *pole2 = new TYPE[N];
+    mergeArrays(part1.data, part1.first, part1.last, part2.data, part2.first, part2.last, pole2);
+    printArray(pole2, 0, N);
+
+    /*//FILLING
     // Time recording before filling
     gettimeofday(&time_before, NULL);
     printf("\nRandom numbers generating started...\n");
@@ -242,9 +238,9 @@ int main(int na, char** arg)
     }
     // Time recording after filling
     gettimeofday(&time_after, NULL);
-    printf("The filling time: %d [ms]\n", timeval_to_ms(&time_before, &time_after));
+    printf("The filling time: %d [ms]\n", timeval_to_ms(&time_before, &time_after));*/
 
-    //SORTING
+    /*//SORTING
     // Time recording before sorting
     gettimeofday(&time_before, NULL);
     printf("\nSorting started...\n");
@@ -258,9 +254,9 @@ int main(int na, char** arg)
     }
     // Time recording after sorting
     gettimeofday(&time_after, NULL);
-    printf("The sorting time: %d [ms]\n", timeval_to_ms(&time_before, &time_after));
+    printf("The sorting time: %d [ms]\n", timeval_to_ms(&time_before, &time_after));*/
 
-    //MERGE
+    /*//MERGE
     // Time recording before merging
     gettimeofday(&time_before, NULL);
     printf("\nMerging started...\n");
@@ -282,8 +278,37 @@ int main(int na, char** arg)
     printArray(pole, N);
     // Time recording after sorting
     gettimeofday(&time_after, NULL);
-    printf("The merging time: %d [ms]\n", timeval_to_ms(&time_before, &time_after));
+    printf("The merging time: %d [ms]\n", timeval_to_ms(&time_before, &time_after));*/
 
     gettimeofday(&time_all_stop, NULL);
     printf("The time all: %d [ms]\n", timeval_to_ms(&time_all_start, &time_all_stop));
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
