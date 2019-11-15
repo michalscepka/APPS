@@ -21,7 +21,7 @@
 #define TYPE __uint32_t
 //#define TYPE int
 
-bool vypis = 1;
+bool vypis = 0;
 
 class task_part
 {
@@ -78,12 +78,27 @@ public:
             TYPE tmp = data[j];
             while (j - first > 0 && tmp > data[j - 1])
             {
-            	data[j] = data[j - 1];
+                data[j] = data[j - 1];
                 j--;
             }
             data[j] = tmp;
         }
     }
+
+    void insertionSortOpak()
+        {
+            for (int i = first; i < last - 1; i++)
+            {
+                int j = i + 1;
+                TYPE tmp = data[j];
+                while (j - first > 0 && tmp < data[j - 1])
+                {
+                    data[j] = data[j - 1];
+                    j--;
+                }
+                data[j] = tmp;
+            }
+        }
 
     //zkontroluje ze je pole setrizene
     bool check()
@@ -118,20 +133,42 @@ void mergeArrays(TYPE* data, TYPE* result, int first1, int last1, int first2, in
 
     while (i < last1 && j < last2)
     {
-    	if (data[i] > data[j])
-			result[k++] = data[i++];
-		else
-			result[k++] = data[j++];
+        if (data[i] > data[j])
+            result[k++] = data[i++];
+        else
+            result[k++] = data[j++];
     }
 
     while (i < last1)
-    	result[k++] = data[i++];
+        result[k++] = data[i++];
 
     while (j < last2)
-    	result[k++] = data[j++];
+        result[k++] = data[j++];
 
     for(int a = last2; a < N; a++)
-    	result[a] = data[a];
+        result[a] = data[a];
+}
+
+void mergeArraysOpak(TYPE* data, TYPE* result, int first1, int last1, int first2, int last2, int N)
+{
+    int i = 0, j = first2, k = 0;
+
+    while (i < last1 && j < last2)
+    {
+        if (data[i] < data[j])
+            result[k++] = data[i++];
+        else
+            result[k++] = data[j++];
+    }
+
+    while (i < last1)
+        result[k++] = data[i++];
+
+    while (j < last2)
+        result[k++] = data[j++];
+
+    for(int a = last2; a < N; a++)
+        result[a] = data[a];
 }
 
 // Thread will sort array from element arg->first to arg->last.
@@ -147,6 +184,21 @@ void *thread_sort(void *void_arg)
     //printf("Sorted in thread %d:\n", ptr_task->id);
     printArray(ptr_task->data, ptr_task->first, ptr_task->last);
     
+    return NULL;
+}
+
+void *thread_sort_opak(void *void_arg)
+{
+    task_part *ptr_task = (task_part*)void_arg;
+    //printf("Thread %d sorting started from %d to %d...\n", ptr_task->id, ptr_task->first, ptr_task->last);
+
+    //ptr_task->bubbleSort();
+    //ptr_task->selectionSort();
+    ptr_task->insertionSortOpak();
+
+    //printf("Sorted in thread %d:\n", ptr_task->id);
+    printArray(ptr_task->data, ptr_task->first, ptr_task->last);
+
     return NULL;
 }
 
@@ -177,97 +229,113 @@ int main(int na, char** arg)
         return 1;
     }
 
-    // Initialization of random number generator
-    srand((int)time(NULL));
-
-    for (int i = 0; i < N; i++)
+    int vlakna[] = {1, 2, 6, 10, 20, 40, 80};
+    for(int i = 0; i < 7; i++)
     {
-        pole[i] = rand() % (100);
+        //printf("%d\n", vlakna[i]);
+
+        // Initialization of random number generator
+        srand((int)time(NULL));
+
+        for (int i = 0; i < N; i++)
+        {
+            pole[i] = rand() % (100);
+        }
+        printArray(pole, 0, N);
+
+        //vytvoreni threadu a task_partu
+        int th_count = vlakna[i];
+        /*if(na == 3)
+            th_count = atoi(arg[2]);*/
+
+        pthread_t threads[th_count];
+        std::vector<task_part> parts;
+        for (int i = 0; i < th_count; i++)
+        {
+            if(i == th_count - 1)
+            {
+                parts.push_back(task_part(i + 1, i * (N / th_count), (i + 1) * (N / th_count) + (N % th_count), pole));
+            }
+            else
+            {
+                parts.push_back(task_part(i + 1, i * (N / th_count), (i + 1) * (N / th_count), pole));
+            }
+        }
+        printf("\nUsing %d threads...\n", th_count);
+
+        //SORT
+        timeval time_all_start_1, time_all_stop_1;
+        gettimeofday(&time_all_start_1, NULL);
+        printf("\nSorting started...\n");
+        for (int i = 0; i < th_count; i++)
+        {
+            pthread_create(&threads[i], NULL, thread_sort, &parts[i]);
+        }
+        for (int i = 0; i < th_count; ++i)
+        {
+            pthread_join(threads[i], NULL);
+        }
+
+        //MERGE
+        TYPE *temporary = new TYPE[N];
+        for(int i = 0; i < th_count - 1; i++)
+        {
+            mergeArrays(pole, temporary, 0, parts[i].last, parts[i + 1].first, parts[i + 1].last, N);
+
+            TYPE* tmp = pole;
+            pole = temporary;
+            temporary = tmp;
+        }
+        printf("Result:\n");
+        printArray(pole, 0, N);
+
+        gettimeofday(&time_all_stop_1, NULL);
+        int time_all_1 = timeval_to_ms(&time_all_start_1, &time_all_stop_1);
+        printf("The time SUM1: %d [ms]\n", time_all_1);
+
+        //OPAK
+        std::vector<task_part> parts2;
+        for (int i = 0; i < th_count; i++)
+        {
+            if(i == th_count - 1)
+            {
+                parts2.push_back(task_part(i + 1, i * (N / th_count), (i + 1) * (N / th_count) + (N % th_count), pole));
+            }
+            else
+            {
+                parts2.push_back(task_part(i + 1, i * (N / th_count), (i + 1) * (N / th_count), pole));
+            }
+        }
+        printf("\nUsing %d threads...\n", th_count);
+
+        //SORT
+        timeval time_all_start_2, time_all_stop_2;
+        gettimeofday(&time_all_start_2, NULL);
+        printf("\nSorting started...\n");
+        for (int i = 0; i < th_count; i++)
+        {
+            pthread_create(&threads[i], NULL, thread_sort_opak, &parts2[i]);
+        }
+        for (int i = 0; i < th_count; ++i)
+        {
+            pthread_join(threads[i], NULL);
+        }
+
+        //MERGE
+        TYPE *temporary2 = new TYPE[N];
+        for(int i = 0; i < th_count - 1; i++)
+        {
+            mergeArraysOpak(pole, temporary2, 0, parts2[i].last, parts2[i + 1].first, parts2[i + 1].last, N);
+
+            TYPE* tmp = pole;
+            pole = temporary2;
+            temporary2 = tmp;
+        }
+        printf("Result:\n");
+        printArray(pole, 0, N);
+
+        gettimeofday(&time_all_stop_2, NULL);
+        int time_all_2 = timeval_to_ms(&time_all_start_2, &time_all_stop_2);
+        printf("The time SUM2: %d [ms]\n--------------------------------------------\n", time_all_2);
     }
-    printArray(pole, 0, N);
-
-    //vytvoreni threadu a task_partu
-    int th_count = 2;
-    if(na == 3)
-        th_count = atoi(arg[2]);
-
-    pthread_t threads[th_count];
-    std::vector<task_part> parts;
-    for (int i = 0; i < th_count; i++)
-    {
-    	if(i == th_count - 1)
-    	{
-    		parts.push_back(task_part(i + 1, i * (N / th_count), (i + 1) * (N / th_count) + (N % th_count), pole));
-    	}
-    	else
-    	{
-    		parts.push_back(task_part(i + 1, i * (N / th_count), (i + 1) * (N / th_count), pole));
-    	}
-    }
-    printf("\nUsing %d threads...\n", th_count);
-
-    //SORT
-    timeval time_before, time_after, time_all_start, time_all_stop;
-    gettimeofday(&time_all_start, NULL);
-    gettimeofday(&time_before, NULL);
-    printf("\nSorting started...\n");
-    for (int i = 0; i < th_count; i++)
-    {
-        pthread_create(&threads[i], NULL, thread_sort, &parts[i]);
-    }
-    for (int i = 0; i < th_count; ++i)
-    {
-        pthread_join(threads[i], NULL);
-    }
-    gettimeofday(&time_after, NULL);
-    printf("The SORTING time: %d [ms]\n", timeval_to_ms(&time_before, &time_after));
-
-    //MERGE
-    gettimeofday(&time_before, NULL);
-    TYPE *temporary = new TYPE[N];
-	for(int i = 0; i < th_count - 1; i++)
-	{
-		mergeArrays(pole, temporary, 0, parts[i].last, parts[i + 1].first, parts[i + 1].last, N);
-
-		TYPE* tmp = pole;
-		pole = temporary;
-		temporary = tmp;
-	}
-	gettimeofday(&time_after, NULL);
-	printf("The MERGING time: %d [ms]\n", timeval_to_ms(&time_before, &time_after));
-
-	printf("Result:\n");
-	printArray(pole, 0, N);
-
-    gettimeofday(&time_all_stop, NULL);
-    printf("The time SUM: %d [ms]\n", timeval_to_ms(&time_all_start, &time_all_stop));
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
