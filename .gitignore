@@ -1,5 +1,6 @@
 sklad/
 workspace.mcu/
+Zkouska/
 
 # Prerequisites
 *.d
@@ -364,3 +365,173 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+Zkouska/Dominik/APPS_SNIFER.docx
+Zkouska/Dominik/APPS.rar
+Zkouska/Dominik/Zkouska_otazky_odpovedi.pdf
+Zkouska/Dominik/Studijní materiály/archpoc.pdf
+Zkouska/Dominik/Studijní materiály/disky.pdf
+Zkouska/Dominik/Studijní materiály/intel.pdf
+Zkouska/Dominik/Studijní materiály/komunikace.pdf
+Zkouska/Dominik/Studijní materiály/monitory.pdf
+Zkouska/Dominik/Studijní materiály/monolity.pdf
+Zkouska/Dominik/Studijní materiály/pameti.pdf
+Zkouska/Dominik/Studijní materiály/procrisc.pdf
+Zkouska/Dominik/Studijní materiály/technologie.pdf
+Zkouska/Dominik/Studijní materiály/z1a.pdf
+Zkouska/Dominik/Výpisky/1) Technologie výroby číslicových obvodů.docx
+Zkouska/Dominik/Výpisky/2) Neumann, architektury.docx
+Zkouska/Dominik/Výpisky/3) Komunikace s perifériemi, Sběrnice.docx
+Zkouska/Dominik/Výpisky/4) CISC, RISC, řetězení, skoky, ARM....docx
+Zkouska/Dominik/Výpisky/5) CISC, Intel Pro.docx
+Zkouska/Dominik/Výpisky/6) Monolitické počítače, PWM, ATMega32, I2C,.docx
+Zkouska/Dominik/Výpisky/7) Paměti počítačů, dynamické, statické.docx
+Zkouska/Dominik/Výpisky/8) Externí diskové paměti, optické, magnetické.docx
+Zkouska/Dominik/Výpisky/9) Zobrazovací jednotky počítačů - monitory.docx
+Zkouska/Dominik/Výpisky/10) Cuda, Fermi.docx
+Zkouska/Dominik/Výpisky/11) I2C, Atmel AT90, ARM, ATMega.docx
+Zkouska/Dominik/Výpisky/12) Paralelní systémy, Flynn.docx
+Zkouska/Dominik/Výpisky/Otázky 2017-2018 Olivka.txt
+Zkouska/Dominik/Výpisky/otázky 2019.txt
+Zkouska/Dominik/Výpisky/Otázky Olivka.docx
+Zkouska/Dominik/Výpisky/Otázky.docx
+Zkouska/Dominik/ke zkoušce/01.doc
+Zkouska/Dominik/ke zkoušce/02.doc
+Zkouska/Dominik/ke zkoušce/03.doc
+Zkouska/Dominik/ke zkoušce/04.doc
+Zkouska/Dominik/ke zkoušce/05.doc
+Zkouska/Dominik/ke zkoušce/APPS_-_typove_otazky.pdf
+Zkouska/Dominik/ke zkoušce/APPS-zimni-2011_SLABSI.pdf
+Zkouska/Dominik/ke zkoušce/APPS.docx
+Zkouska/Dominik/ke zkoušce/Architektura počítačů - zkouška_DA_SE.pdf
+Zkouska/Dominik/ke zkoušce/Architektura-SVGA.pdf
+Zkouska/Dominik/ke zkoušce/Architektury počítačů_VytahZPrezentace.ppt
+Zkouska/Dominik/ke zkoušce/archpoc.pdf
+Zkouska/Dominik/ke zkoušce/ARP_ZK-Olivka_LEPSI.pdf
+Zkouska/Dominik/ke zkoušce/Atmel AT90.pdf
+Zkouska/Dominik/ke zkoušce/cuda-intro.pdf
+Zkouska/Dominik/ke zkoušce/disky.pdf
+Zkouska/Dominik/ke zkoušce/Graf.proc,videomapměť,DAC.pdf
+Zkouska/Dominik/ke zkoušce/HPC-Migraceproc.pdf
+Zkouska/Dominik/ke zkoušce/Intel CoreDUO,arch. a dek..pdf
+Zkouska/Dominik/ke zkoušce/intel.pdf
+Zkouska/Dominik/ke zkoušce/IntelCDuo,Speculative prec. and pref..pdf
+Zkouska/Dominik/ke zkoušce/komunikace.pdf
+Zkouska/Dominik/ke zkoušce/monitory.pdf
+Zkouska/Dominik/ke zkoušce/MonolitickéPC.pdf
+Zkouska/Dominik/ke zkoušce/monolity.pdf
+Zkouska/Dominik/ke zkoušce/Otázky Líčev.TXT
+Zkouska/Dominik/ke zkoušce/pameti.pdf
+Zkouska/Dominik/ke zkoušce/PCIE-fyz.vrstvy.pdf
+Zkouska/Dominik/ke zkoušce/PowerPC,arch. IU,FPU,BPU.pdf
+Zkouska/Dominik/ke zkoušce/procrisc.pdf
+Zkouska/Dominik/ke zkoušce/Přerušení.pdf
+Zkouska/Dominik/ke zkoušce/RodinaP6,MMX.pdf
+Zkouska/Dominik/ke zkoušce/SATA,PATA.pdf
+Zkouska/Dominik/ke zkoušce/Sériová kom, princip, druhy.pdf
+Zkouska/Dominik/ke zkoušce/Tahak apps.pdf
+Zkouska/Dominik/ke zkoušce/tahak-2011.pdf
+Zkouska/Dominik/ke zkoušce/Tahak.pdf
+Zkouska/Dominik/ke zkoušce/Tahak2.pdf
+Zkouska/Dominik/ke zkoušce/technologie.pdf
+Zkouska/Dominik/ke zkoušce/Typy zřetězení,instrukční zřetězení.pdf
+Zkouska/Dominik/ke zkoušce/upravene_skripta_olivka_update_DOBRE.pdf
+Zkouska/Dominik/ke zkoušce/Von Neumann,Harvard.pdf
+Zkouska/Dominik/ke zkoušce/Základní rysy CISC,RISC,arch. a fce.pdf
+Zkouska/Dominik/ke zkoušce/ZKOUSKA_licev_03012011.docx
+Zkouska/Dominik/ke zkoušce/zkouska_olivka_2011-2012_DOST_DOBRE.pdf
+Zkouska/Dominik/ke zkoušce/Zkouška otázky(z 2.1.2012).txt
+Zkouska/Ke zkoušce/01.doc
+Zkouska/Ke zkoušce/02.doc
+Zkouska/Ke zkoušce/03.doc
+Zkouska/Ke zkoušce/04.doc
+Zkouska/Ke zkoušce/05.doc
+Zkouska/Ke zkoušce/APPS_SNIFER.docx
+Zkouska/Ke zkoušce/APPS.docx
+Zkouska/Ke zkoušce/Architektura-SVGA.pdf
+Zkouska/Ke zkoušce/Architektury počítačů_VytahZPrezentace.ppt
+Zkouska/Ke zkoušce/ARP_ZK-Olivka_LEPSI.pdf
+Zkouska/Ke zkoušce/Atmel AT90.pdf
+Zkouska/Ke zkoušce/cuda-intro.pdf
+Zkouska/Ke zkoušce/Graf.proc,videomapměť,DAC.pdf
+Zkouska/Ke zkoušce/HPC-Migraceproc.pdf
+Zkouska/Ke zkoušce/Intel CoreDUO,arch. a dek..pdf
+Zkouska/Ke zkoušce/IntelCDuo,Speculative prec. and pref..pdf
+Zkouska/Ke zkoušce/MonolitickéPC.pdf
+Zkouska/Ke zkoušce/PCIE-fyz.vrstvy.pdf
+Zkouska/Ke zkoušce/PowerPC,arch. IU,FPU,BPU.pdf
+Zkouska/Ke zkoušce/Přerušení.pdf
+Zkouska/Ke zkoušce/RodinaP6,MMX.pdf
+Zkouska/Ke zkoušce/SATA,PATA.pdf
+Zkouska/Ke zkoušce/Sériová kom, princip, druhy.pdf
+Zkouska/Ke zkoušce/Tahak apps.pdf
+Zkouska/Ke zkoušce/tahak-2011.pdf
+Zkouska/Ke zkoušce/Tahak.pdf
+Zkouska/Ke zkoušce/Tahak2.pdf
+Zkouska/Ke zkoušce/Typy zřetězení,instrukční zřetězení.pdf
+Zkouska/Ke zkoušce/upravene_skripta_olivka_update_DOBRE.pdf
+Zkouska/Ke zkoušce/Von Neumann,Harvard.pdf
+Zkouska/Ke zkoušce/Základní rysy CISC,RISC,arch. a fce.pdf
+Zkouska/Ke zkoušce/zkouska_olivka_2011-2012_DOST_DOBRE.pdf
+Zkouska/Ke zkoušce/Otazky/APPS_-_typove_otazky.pdf
+Zkouska/Ke zkoušce/Otazky/APPS-zimni-2011_SLABSI.pdf
+Zkouska/Ke zkoušce/Otazky/Architektura počítačů - zkouška_DA_SE.pdf
+Zkouska/Ke zkoušce/Otazky/Otázky 2017-2018 Olivka.txt
+Zkouska/Ke zkoušce/Otazky/otázky 2019.txt
+Zkouska/Ke zkoušce/Otazky/Otázky Líčev.TXT
+Zkouska/Ke zkoušce/Otazky/Otázky Olivka.docx
+Zkouska/Ke zkoušce/Otazky/Otázky.docx
+Zkouska/Ke zkoušce/Otazky/ZKOUSKA_licev_03012011.docx
+Zkouska/Ke zkoušce/Otazky/Zkouska_otazky_odpovedi.pdf
+Zkouska/Ke zkoušce/Otazky/Zkouška otázky(z 2.1.2012).txt
+Zkouska/Prednasky/1 technologie.pdf
+Zkouska/Prednasky/2 archpoc.pdf
+Zkouska/Prednasky/3 komunikace.pdf
+Zkouska/Prednasky/4 procrisc.pdf
+Zkouska/Prednasky/5 intel.pdf
+Zkouska/Prednasky/6 pameti.pdf
+Zkouska/Prednasky/7 monolity.pdf
+Zkouska/Prednasky/8 monitory.pdf
+Zkouska/Prednasky/9 disky.pdf
+Zkouska/Prednasky/10 cuda.pdf
+Zkouska/Prednasky/z1a.pdf
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU.html
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-01.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-02.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-03.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-04.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-05.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-06.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-07.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-08.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-09.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-10.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-11.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-12.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-13.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-14.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-15.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-16.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-17.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-18.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-19.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-20.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-21.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-22.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-23.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-24.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-25.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-26.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-27.jpg
+Zkouska/Prednasky/Vyroba CPU/Výroba CPU_files/fabrication-cpu-28.jpg
+Zkouska/Výpisky/1) Technologie výroby číslicových obvodů.docx
+Zkouska/Výpisky/2) Neumann, architektury.docx
+Zkouska/Výpisky/3) Komunikace s perifériemi, Sběrnice.docx
+Zkouska/Výpisky/4) CISC, RISC, řetězení, skoky, ARM....docx
+Zkouska/Výpisky/5) CISC, Intel Pro.docx
+Zkouska/Výpisky/6) Monolitické počítače, PWM, ATMega32, I2C,.docx
+Zkouska/Výpisky/7) Paměti počítačů, dynamické, statické.docx
+Zkouska/Výpisky/8) Externí diskové paměti, optické, magnetické.docx
+Zkouska/Výpisky/9) Zobrazovací jednotky počítačů - monitory.docx
+Zkouska/Výpisky/10) Cuda, Fermi.docx
+Zkouska/Výpisky/11) I2C, Atmel AT90, ARM, ATMega.docx
+Zkouska/Výpisky/12) Paralelní systémy, Flynn.docx
