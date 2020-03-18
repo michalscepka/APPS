@@ -20,7 +20,7 @@
 
 //#define WIDTH 8
 //#define HEIGHT 8
-#define WIDTH 36
+#define WIDTH 22
 #define HEIGHT 36
 
 // Serial line for printf output
@@ -166,8 +166,8 @@ public:
 			int radek_fontu = font[character][y];
             for(int x = 0; x < WIDTH; x++)
             {
-                //if(radek_fontu & (1 << x)) drawPixel(pos.x + x, pos.y + y);		//LSB
-				if(radek_fontu & (1 << x)) drawPixel(pos.x - x + WIDTH, pos.y + y);    //MSB
+                //if(radek_fontu & (HEIGHT - WIDTH << x)) drawPixel(pos.x + x, pos.y + y);		//LSB
+				if(radek_fontu & (HEIGHT - WIDTH << x)) drawPixel(pos.x - x + WIDTH, pos.y + y);    //MSB
             }
         }
     }
@@ -232,13 +232,13 @@ public:
                 {
                     if(horizontal)
                     {
-						//if(radek_fontu & (1 << x)) drawPixel(pos.x + x + offs, pos.y + y);           //LSB
-                        if(radek_fontu & (1 << x)) drawPixel(pos.x - x + WIDTH + offs, pos.y + y);    //MSB
+						//if(radek_fontu & (HEIGHT - WIDTH << x)) drawPixel(pos.x + x + offs, pos.y + y);           //LSB
+                        if(radek_fontu & (HEIGHT - WIDTH << x)) drawPixel(pos.x - x + WIDTH + offs, pos.y + y);    //MSB
                     }
                     else
                     {
-                        //if(radek_fontu & (1 << x)) drawPixel(pos.x + x, pos.y + y + offs);			//LSB
-						if(radek_fontu & (1 << x)) drawPixel(pos.x - x + WIDTH, pos.y + y + offs);    //MSB
+                        //if(radek_fontu & (HEIGHT - WIDTH << x)) drawPixel(pos.x + x, pos.y + y + offs);			//LSB
+						if(radek_fontu & (HEIGHT - WIDTH << x)) drawPixel(pos.x - x + WIDTH, pos.y + y + offs);    //MSB
                     }
                 }
             }
