@@ -1,2 +1,2 @@
 # APPS
-pain
+Architecture of Computers and Parallel Systems - VŠB
